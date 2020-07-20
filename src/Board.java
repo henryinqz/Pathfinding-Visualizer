@@ -2,11 +2,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class Board implements ActionListener, MouseListener, MouseMotionListener {
+public class Board extends MouseAdapter implements ActionListener {
     // PROPERTIES
     BoardPanel boardPanel = new BoardPanel(); // Create new boardPanel JPanel object
-    public static Node[][] grid;
-    public static int gridWidth, nodeSideLength;
+    static Node[][] grid;
+    static int gridWidth, nodeSideLength;
+
+    // Draw tools
+    JRadioButton butStart = new JRadioButton("Start node", true);
+    JRadioButton butEnd = new JRadioButton("End node");
+    JRadioButton butBarrier = new JRadioButton("Barrier node");
 
     Timer timerBoard = new Timer(1000 / 60, this); //60FPS
 
@@ -32,55 +37,73 @@ public class Board implements ActionListener, MouseListener, MouseMotionListener
     }
 
     // MouseListener/MouseMotionListener methods
-    public void mouseClicked(MouseEvent evt) {
-    }
     public void mousePressed(MouseEvent evt) {
-        int mouseX = evt.getX();
-        int mouseY = evt.getY();
-        if (mouseX >= GUI.MENU_WIDTH && mouseX <= GUI.FRAME_WIDTH && mouseY >= 0 && mouseY <= GUI.FRAME_HEIGHT && grid != null) { // Mouse pointer is within grid (not in menu bar)
+        int mouseX = evt.getX(), mouseY = evt.getY();
+        if (mouseX >= GUI.MENU_WIDTH && mouseX < GUI.FRAME_WIDTH && mouseY >= 0 && mouseY < GUI.FRAME_HEIGHT && grid != null) { // Mouse pointer is within grid (not in menu bar)
             int gridX = (mouseX-GUI.MENU_WIDTH) / nodeSideLength;
             int gridY = mouseY / nodeSideLength;
 
-            if (SwingUtilities.isLeftMouseButton(evt)) { // Left click (draw)
-                grid[gridY][gridX].setBarrier();
+            if (SwingUtilities.isLeftMouseButton(evt) && grid[gridY][gridX].isEmpty()) { // Left click (draw)
+                if (butStart.isSelected()) { // TODO: limit only one start & end node
+                    grid[gridY][gridX].setStart();
+                } else if (butEnd.isSelected()) {
+                    grid[gridY][gridX].setEnd();
+                } else if (butBarrier.isSelected()) {
+                    grid[gridY][gridX].setBarrier();
+                }
             } else if (SwingUtilities.isRightMouseButton(evt)) { // Right click (erase)
                 grid[gridY][gridX].setEmpty();
             }
         }
-    }
-    public void mouseReleased(MouseEvent evt) {
-    }
-    public void mouseEntered(MouseEvent evt) {
-    }
-    public void mouseExited(MouseEvent evt) {
     }
     public void mouseDragged(MouseEvent evt) {
-        System.out.println("Dragged: " + evt.getButton());
-
-        int mouseX = evt.getX();
-        int mouseY = evt.getY();
-        if (mouseX >= GUI.MENU_WIDTH && mouseX <= GUI.FRAME_WIDTH && mouseY >= 0 && mouseY <= GUI.FRAME_HEIGHT && grid != null) { // Mouse pointer is within grid (not in menu bar)
+        int mouseX = evt.getX(), mouseY = evt.getY();
+        if (mouseX >= GUI.MENU_WIDTH && mouseX < GUI.FRAME_WIDTH && mouseY >= 0 && mouseY < GUI.FRAME_HEIGHT && grid != null) { // Mouse pointer is within grid (not in menu bar)
             int gridX = (mouseX-GUI.MENU_WIDTH) / nodeSideLength;
             int gridY = mouseY / nodeSideLength;
 
-            if (SwingUtilities.isLeftMouseButton(evt)) { // Left click (draw)
-                grid[gridY][gridX].setBarrier();
+            if (SwingUtilities.isLeftMouseButton(evt) && grid[gridY][gridX].isEmpty()) { // Left click (draw)
+                if (butStart.isSelected()) {
+                    grid[gridY][gridX].setStart();
+                } else if (butEnd.isSelected()) {
+                    grid[gridY][gridX].setEnd();
+                } else if (butBarrier.isSelected()) {
+                    grid[gridY][gridX].setBarrier();
+                }
             } else if (SwingUtilities.isRightMouseButton(evt)) { // Right click (erase)
                 grid[gridY][gridX].setEmpty();
             }
         }
-    }
-    public void mouseMoved(MouseEvent evt) {
     }
 
     // CONSTRUCTOR
     public Board() {
         this.boardPanel.setPreferredSize(new Dimension(GUI.FRAME_WIDTH, GUI.FRAME_HEIGHT));
         this.boardPanel.setLayout(null);
-        //this.mainMenuPanel.setBackground(Color.DARK_GRAY);
-
         this.boardPanel.addMouseListener(this);
         this.boardPanel.addMouseMotionListener(this);
+        //this.mainMenuPanel.setBackground(Color.DARK_GRAY);
+
+        // Draw tool radio buttons
+        this.boardPanel.add(this.butStart);
+        this.butStart.setBounds(20,100,100,20);
+        this.butStart.setFocusable(false);
+        this.butStart.addActionListener(this);
+
+        this.boardPanel.add(this.butEnd);
+        this.butEnd.setBounds(20,100+20,100,20);
+        this.butEnd.setFocusable(false);
+        this.butEnd.addActionListener(this);
+
+        this.boardPanel.add(this.butBarrier);
+        this.butBarrier.setBounds(20,100+20+20,100,20);
+        this.butBarrier.setFocusable(false);
+        this.butBarrier.addActionListener(this);
+
+        ButtonGroup drawTools = new ButtonGroup(); // Only allows one draw tool radio button to be pressed at a time
+        drawTools.add(this.butStart);
+        drawTools.add(this.butEnd);
+        drawTools.add(this.butBarrier);
 
         generateGrid(25); // TODO: limit range from 8-40; default 25
 
@@ -91,7 +114,6 @@ public class Board implements ActionListener, MouseListener, MouseMotionListener
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        //int sideLength = GUI.FRAME_HEIGHT/Board.grid.length;
         drawNodes(g, Board.grid, Board.nodeSideLength);
         drawGrid(g, Board.grid, Board.nodeSideLength);
     }

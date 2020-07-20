@@ -39,6 +39,18 @@ public class Node {
     public Color getColor() {
         return color;
     }
+    public boolean isEmpty() {
+        return this.color == EMPTY_NODE;
+    }
+    public boolean isBarrier() {
+        return this.color == BARRIER_NODE;
+    }
+    public boolean isStart() {
+        return this.color == START_NODE;
+    }
+    public boolean isEnd() {
+        return this.color == END_NODE;
+    }
 
     // Setters
     public void setPos(int x, int y) {
