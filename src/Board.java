@@ -40,8 +40,12 @@ public class Board implements ActionListener, MouseListener, MouseMotionListener
         if (mouseX >= GUI.MENU_WIDTH && mouseX <= GUI.FRAME_WIDTH && mouseY >= 0 && mouseY <= GUI.FRAME_HEIGHT && grid != null) { // Mouse pointer is within grid (not in menu bar)
             int gridX = (mouseX-GUI.MENU_WIDTH) / nodeSideLength;
             int gridY = mouseY / nodeSideLength;
-            grid[gridY][gridX].setBarrier();
-            boardPanel.repaint();
+
+            if (SwingUtilities.isLeftMouseButton(evt)) { // Left click (draw)
+                grid[gridY][gridX].setBarrier();
+            } else if (SwingUtilities.isRightMouseButton(evt)) { // Right click (erase)
+                grid[gridY][gridX].setEmpty();
+            }
         }
     }
     public void mouseReleased(MouseEvent evt) {
@@ -51,14 +55,19 @@ public class Board implements ActionListener, MouseListener, MouseMotionListener
     public void mouseExited(MouseEvent evt) {
     }
     public void mouseDragged(MouseEvent evt) {
-        System.out.println("dragged");
+        System.out.println("Dragged: " + evt.getButton());
+
         int mouseX = evt.getX();
         int mouseY = evt.getY();
         if (mouseX >= GUI.MENU_WIDTH && mouseX <= GUI.FRAME_WIDTH && mouseY >= 0 && mouseY <= GUI.FRAME_HEIGHT && grid != null) { // Mouse pointer is within grid (not in menu bar)
             int gridX = (mouseX-GUI.MENU_WIDTH) / nodeSideLength;
             int gridY = mouseY / nodeSideLength;
-            grid[gridY][gridX].setBarrier();
-            boardPanel.repaint();
+
+            if (SwingUtilities.isLeftMouseButton(evt)) { // Left click (draw)
+                grid[gridY][gridX].setBarrier();
+            } else if (SwingUtilities.isRightMouseButton(evt)) { // Right click (erase)
+                grid[gridY][gridX].setEmpty();
+            }
         }
     }
     public void mouseMoved(MouseEvent evt) {
