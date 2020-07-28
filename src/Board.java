@@ -10,8 +10,6 @@ public class Board extends MouseAdapter implements ActionListener {
     public static Node[][] grid;
     public static int gridWidth, nodeSideLength;
     private Node startNode, endNode;
-    //private boolean startNodeExists = false;
-    //private boolean endNodeExists = false;
 
     // Draw tools
     private JRadioButton butStart = new JRadioButton("Start node", true);
@@ -27,15 +25,27 @@ public class Board extends MouseAdapter implements ActionListener {
         return this.boardPanel;
     }
 
-    public void actionPerformed(ActionEvent evt) {
-        if (evt.getSource() == this.timerBoard) { // 60FPS Timer
-            this.boardPanel.repaint();
-        } else if (evt.getSource() == this.butClear) {
-            if (JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the grid?", "Warning",
-                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { // Confirm clear grid dialog. Yes option.
-                generateGrid(gridWidth);
-            } else { // No option
-            }
+    // Start/end node getters/setters
+    public Node getStartNode() {
+        return this.startNode;
+    }
+    public Node getEndNode() {
+        return this.endNode;
+    }
+    public void setStartNode(Node startNode) {
+        this.startNode = startNode;
+        if (startNode == null) {
+            this.butStart.setText("Start node");
+        } else {
+            this.butStart.setText("Start node: (" + startNode.getX() + ", " + startNode.getY() + ")"); // TODO: Consider changing to non-array x/y coordinates (+1 to each val)
+        }
+    }
+    public void setEndNode(Node endNode) {
+        this.endNode = endNode;
+        if (endNode == null) {
+            this.butEnd.setText("End node");
+        } else {
+            this.butEnd.setText("End node: (" + endNode.getX() + ", " + endNode.getY() + ")"); // TODO: Consider changing to non-array x/y coordinates (+1 to each val)
         }
     }
 
@@ -50,11 +60,22 @@ public class Board extends MouseAdapter implements ActionListener {
         this.gridWidth = width;
         this.nodeSideLength = GUI.FRAME_HEIGHT/Board.grid.length;
 
-        this.startNode = null; // Reset start/end nodes
-        this.endNode = null;
+        setStartNode(null); // Reset start/end nodes
+        setEndNode(null);
     }
 
-    // MouseListener/MouseMotionListener methods
+    // Listener methods (ActionListener, MouseListener/MouseMotionListener/MouseAdapter)
+    public void actionPerformed(ActionEvent evt) {
+        if (evt.getSource() == this.timerBoard) { // 60FPS Timer
+            this.boardPanel.repaint();
+        } else if (evt.getSource() == this.butClear) {
+            if (JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the grid?", "Warning",
+                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { // Confirm clear grid dialog. Yes option.
+                generateGrid(gridWidth);
+            } else { // No option
+            }
+        }
+    }
     public void mousePressed(MouseEvent evt) {
         int mouseX = evt.getX(), mouseY = evt.getY();
         if (mouseX >= GUI.MENU_WIDTH && mouseX < GUI.FRAME_WIDTH && mouseY >= 0 && mouseY < GUI.FRAME_HEIGHT && this.grid != null) { // Mouse pointer is within grid (not in menu bar)
@@ -64,18 +85,18 @@ public class Board extends MouseAdapter implements ActionListener {
             if (SwingUtilities.isLeftMouseButton(evt) && this.grid[gridY][gridX].isEmpty()) { // Left click (draw)
                 if (this.butStart.isSelected() && this.startNode == null) { // Checks which draw tool is selected. Also limits only one start/end node
                     this.grid[gridY][gridX].setStart();
-                    this.startNode = this.grid[gridY][gridX];
+                    setStartNode(this.grid[gridY][gridX]);
                 } else if (this.butEnd.isSelected() && this.endNode == null) {
                     this.grid[gridY][gridX].setEnd();
-                    this.endNode = this.grid[gridY][gridX];
+                    setEndNode(this.grid[gridY][gridX]);
                 } else if (this.butBarrier.isSelected()) {
                     this.grid[gridY][gridX].setBarrier();
                 }
             } else if (SwingUtilities.isRightMouseButton(evt)) { // Right click (erase)
-                if (this.grid[gridY][gridX].isStart()) { // Reset booleans that track if start/end node exists
-                    this.startNode = null;
+                if (this.grid[gridY][gridX].isStart()) { // Reset start/end node if it exists
+                    setStartNode(null);
                 } else if (this.grid[gridY][gridX].isEnd()) {
-                    this.endNode = null;
+                    setEndNode(null);
                 }
                 this.grid[gridY][gridX].setEmpty();
             }
@@ -90,18 +111,18 @@ public class Board extends MouseAdapter implements ActionListener {
             if (SwingUtilities.isLeftMouseButton(evt) && this.grid[gridY][gridX].isEmpty()) { // Left click (draw)
                 if (this.butStart.isSelected() && this.startNode == null) { // Checks which draw tool is selected. Also limits only one start/end node
                     this.grid[gridY][gridX].setStart();
-                    this.startNode = this.grid[gridY][gridX];
+                    setStartNode(this.grid[gridY][gridX]);
                 } else if (this.butEnd.isSelected() && this.endNode == null) {
                     this.grid[gridY][gridX].setEnd();
-                    this.endNode = this.grid[gridY][gridX];
+                    setEndNode(this.grid[gridY][gridX]);
                 } else if (this.butBarrier.isSelected()) {
                     this.grid[gridY][gridX].setBarrier();
                 }
             } else if (SwingUtilities.isRightMouseButton(evt)) { // Right click (erase)
-                if (this.grid[gridY][gridX].isStart()) { // Reset booleans that track if start/end node exists
-                    this.startNode = null;
+                if (this.grid[gridY][gridX].isStart()) { // Reset start/end node if it exists
+                    setStartNode(null);
                 } else if (this.grid[gridY][gridX].isEnd()) {
-                    this.endNode = null;
+                    setEndNode(null);
                 }
                 this.grid[gridY][gridX].setEmpty();
             }
@@ -118,12 +139,12 @@ public class Board extends MouseAdapter implements ActionListener {
 
         // Draw tool radio buttons
         this.boardPanel.add(this.butStart);
-        this.butStart.setBounds(20,100,100,20);
+        this.butStart.setBounds(20,100,200,20);
         this.butStart.setFocusable(false);
         this.butStart.addActionListener(this);
 
         this.boardPanel.add(this.butEnd);
-        this.butEnd.setBounds(20,100+(20),100,20);
+        this.butEnd.setBounds(20,100+(20),200,20);
         this.butEnd.setFocusable(false);
         this.butEnd.addActionListener(this);
 
