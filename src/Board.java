@@ -5,8 +5,12 @@ import java.awt.event.*;
 public class Board extends MouseAdapter implements ActionListener {
     // PROPERTIES
     BoardPanel boardPanel = new BoardPanel(); // Create new boardPanel JPanel object
+
+    // Grid
     static Node[][] grid;
     static int gridWidth, nodeSideLength;
+    private boolean startNodeExists = false;
+    private boolean endNodeExists = false;
 
     // Draw tools
     JRadioButton butStart = new JRadioButton("Start node", true);
@@ -17,61 +21,75 @@ public class Board extends MouseAdapter implements ActionListener {
 
     // METHODS
     public JPanel getPanel() { // Return current panel
-        return boardPanel;
+        return this.boardPanel;
     }
 
     public void actionPerformed(ActionEvent evt) {
-        if (evt.getSource() == timerBoard) boardPanel.repaint();
+        if (evt.getSource() == timerBoard) this.boardPanel.repaint();
     }
 
     public void generateGrid(int width) { // Generate a square grid
-        grid = new Node[width][width];
-        for (int i=0; i<width; i++) { // Load Node grid/array
-            for (int j=0; j<width; j++) {
-                grid[i][j] = new Node(i,j);
+        this.grid = new Node[width][width];
+        for (int i=0; i < width; i++) { // Load Node grid/array
+            for (int j=0; j < width; j++) {
+                this.grid[i][j] = new Node(i,j);
             }
         }
 
-        gridWidth = width;
-        nodeSideLength = GUI.FRAME_HEIGHT/Board.grid.length;
+        this.gridWidth = width;
+        this.nodeSideLength = GUI.FRAME_HEIGHT/Board.grid.length;
     }
 
     // MouseListener/MouseMotionListener methods
     public void mousePressed(MouseEvent evt) {
         int mouseX = evt.getX(), mouseY = evt.getY();
-        if (mouseX >= GUI.MENU_WIDTH && mouseX < GUI.FRAME_WIDTH && mouseY >= 0 && mouseY < GUI.FRAME_HEIGHT && grid != null) { // Mouse pointer is within grid (not in menu bar)
-            int gridX = (mouseX-GUI.MENU_WIDTH) / nodeSideLength;
-            int gridY = mouseY / nodeSideLength;
+        if (mouseX >= GUI.MENU_WIDTH && mouseX < GUI.FRAME_WIDTH && mouseY >= 0 && mouseY < GUI.FRAME_HEIGHT && this.grid != null) { // Mouse pointer is within grid (not in menu bar)
+            int gridX = (mouseX-GUI.MENU_WIDTH) / this.nodeSideLength;
+            int gridY = mouseY / this.nodeSideLength;
 
-            if (SwingUtilities.isLeftMouseButton(evt) && grid[gridY][gridX].isEmpty()) { // Left click (draw)
-                if (butStart.isSelected()) { // TODO: limit only one start & end node
-                    grid[gridY][gridX].setStart();
-                } else if (butEnd.isSelected()) {
-                    grid[gridY][gridX].setEnd();
-                } else if (butBarrier.isSelected()) {
-                    grid[gridY][gridX].setBarrier();
+            if (SwingUtilities.isLeftMouseButton(evt) && this.grid[gridY][gridX].isEmpty()) { // Left click (draw)
+                if (this.butStart.isSelected() && !this.startNodeExists) { // Checks which draw tool is selected. Also limits only one start/end node
+                    this.grid[gridY][gridX].setStart();
+                    this.startNodeExists = true;
+                } else if (this.butEnd.isSelected() && !this.endNodeExists) {
+                    this.grid[gridY][gridX].setEnd();
+                    this.endNodeExists = true;
+                } else if (this.butBarrier.isSelected()) {
+                    this.grid[gridY][gridX].setBarrier();
                 }
             } else if (SwingUtilities.isRightMouseButton(evt)) { // Right click (erase)
-                grid[gridY][gridX].setEmpty();
+                if (this.grid[gridY][gridX].isStart()) { // Reset booleans that track if start/end node exists
+                    this.startNodeExists = false;
+                } else if (this.grid[gridY][gridX].isEnd()) {
+                    this.endNodeExists = false;
+                }
+                this.grid[gridY][gridX].setEmpty();
             }
         }
     }
     public void mouseDragged(MouseEvent evt) {
         int mouseX = evt.getX(), mouseY = evt.getY();
-        if (mouseX >= GUI.MENU_WIDTH && mouseX < GUI.FRAME_WIDTH && mouseY >= 0 && mouseY < GUI.FRAME_HEIGHT && grid != null) { // Mouse pointer is within grid (not in menu bar)
-            int gridX = (mouseX-GUI.MENU_WIDTH) / nodeSideLength;
-            int gridY = mouseY / nodeSideLength;
+        if (mouseX >= GUI.MENU_WIDTH && mouseX < GUI.FRAME_WIDTH && mouseY >= 0 && mouseY < GUI.FRAME_HEIGHT && this.grid != null) { // Mouse pointer is within grid (not in menu bar)
+            int gridX = (mouseX-GUI.MENU_WIDTH) / this.nodeSideLength;
+            int gridY = mouseY / this.nodeSideLength;
 
-            if (SwingUtilities.isLeftMouseButton(evt) && grid[gridY][gridX].isEmpty()) { // Left click (draw)
-                if (butStart.isSelected()) {
-                    grid[gridY][gridX].setStart();
-                } else if (butEnd.isSelected()) {
-                    grid[gridY][gridX].setEnd();
-                } else if (butBarrier.isSelected()) {
-                    grid[gridY][gridX].setBarrier();
+            if (SwingUtilities.isLeftMouseButton(evt) && this.grid[gridY][gridX].isEmpty()) { // Left click (draw)
+                if (this.butStart.isSelected() && !this.startNodeExists) { // Checks which draw tool is selected. Also limits only one start/end node
+                    this.grid[gridY][gridX].setStart();
+                    this.startNodeExists = true;
+                } else if (this.butEnd.isSelected() && !this.endNodeExists) {
+                    this.grid[gridY][gridX].setEnd();
+                    this.endNodeExists = true;
+                } else if (this.butBarrier.isSelected()) {
+                    this.grid[gridY][gridX].setBarrier();
                 }
             } else if (SwingUtilities.isRightMouseButton(evt)) { // Right click (erase)
-                grid[gridY][gridX].setEmpty();
+                if (this.grid[gridY][gridX].isStart()) { // Reset booleans that track if start/end node exists
+                    this.startNodeExists = false;
+                } else if (this.grid[gridY][gridX].isEnd()) {
+                    this.endNodeExists = false;
+                }
+                this.grid[gridY][gridX].setEmpty();
             }
         }
     }
