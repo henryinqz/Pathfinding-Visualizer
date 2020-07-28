@@ -29,8 +29,11 @@ public class Board extends MouseAdapter implements ActionListener {
         if (evt.getSource() == this.timerBoard) { // 60FPS Timer
             this.boardPanel.repaint();
         } else if (evt.getSource() == this.butClear) {
-            //TODO: option pane to confirm clear
-            generateGrid(gridWidth);
+            if (JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the grid?", "Warning",
+                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { // Confirm clear grid dialog. Yes option.
+                generateGrid(gridWidth);
+            } else { // No option
+            }
         }
     }
 
