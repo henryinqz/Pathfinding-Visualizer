@@ -4,20 +4,21 @@ import java.awt.event.*;
 
 public class Board extends MouseAdapter implements ActionListener {
     // PROPERTIES
-    BoardPanel boardPanel = new BoardPanel(); // Create new boardPanel JPanel object
+    private BoardPanel boardPanel = new BoardPanel(); // Create new boardPanel JPanel object
 
     // Grid
-    static Node[][] grid;
-    static int gridWidth, nodeSideLength;
+    public static Node[][] grid;
+    public static int gridWidth, nodeSideLength;
     private boolean startNodeExists = false;
     private boolean endNodeExists = false;
 
     // Draw tools
-    JRadioButton butStart = new JRadioButton("Start node", true);
-    JRadioButton butEnd = new JRadioButton("End node");
-    JRadioButton butBarrier = new JRadioButton("Barrier node");
+    private JRadioButton butStart = new JRadioButton("Start node", true);
+    private JRadioButton butEnd = new JRadioButton("End node");
+    private JRadioButton butBarrier = new JRadioButton("Barrier node");
+    private JButton butClear = new JButton("Clear grid");
 
-    Timer timerBoard = new Timer(1000 / 60, this); //60FPS
+    private Timer timerBoard = new Timer(1000 / 60, this); // 60FPS
 
     // METHODS
     public JPanel getPanel() { // Return current panel
@@ -25,7 +26,12 @@ public class Board extends MouseAdapter implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent evt) {
-        if (evt.getSource() == timerBoard) this.boardPanel.repaint();
+        if (evt.getSource() == this.timerBoard) { // 60FPS Timer
+            this.boardPanel.repaint();
+        } else if (evt.getSource() == this.butClear) {
+            //TODO: option pane to confirm clear
+            generateGrid(gridWidth);
+        }
     }
 
     public void generateGrid(int width) { // Generate a square grid
@@ -38,6 +44,9 @@ public class Board extends MouseAdapter implements ActionListener {
 
         this.gridWidth = width;
         this.nodeSideLength = GUI.FRAME_HEIGHT/Board.grid.length;
+
+        this.startNodeExists = false;
+        this.endNodeExists = false;
     }
 
     // MouseListener/MouseMotionListener methods
@@ -109,14 +118,19 @@ public class Board extends MouseAdapter implements ActionListener {
         this.butStart.addActionListener(this);
 
         this.boardPanel.add(this.butEnd);
-        this.butEnd.setBounds(20,100+20,100,20);
+        this.butEnd.setBounds(20,100+(20),100,20);
         this.butEnd.setFocusable(false);
         this.butEnd.addActionListener(this);
 
         this.boardPanel.add(this.butBarrier);
-        this.butBarrier.setBounds(20,100+20+20,100,20);
+        this.butBarrier.setBounds(20,100+(20*2),100,20);
         this.butBarrier.setFocusable(false);
         this.butBarrier.addActionListener(this);
+
+        this.boardPanel.add(this.butClear);
+        this.butClear.setBounds(20,100+(20*4),100,40);
+        this.butClear.setFocusable(false);
+        this.butClear.addActionListener(this);
 
         ButtonGroup drawTools = new ButtonGroup(); // Only allows one draw tool radio button to be pressed at a time
         drawTools.add(this.butStart);
