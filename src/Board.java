@@ -12,13 +12,20 @@ public class Board extends MouseAdapter implements ActionListener {
     private Node startNode, endNode;
 
     // Draw tools
-    private JRadioButton butStart = new JRadioButton("Start node", true);
-    private JRadioButton butEnd = new JRadioButton("End node");
-    private JRadioButton butBarrier = new JRadioButton("Barrier node");
+    private JRadioButton rbStartNode = new JRadioButton("Start node", true);
+    private JRadioButton rbEndNode = new JRadioButton("End node");
+    private JRadioButton rbBarrierNode = new JRadioButton("Barrier node");
     private JLabel labelErase = new JLabel("Right click to erase nodes");
     private JButton butClear = new JButton("Clear grid");
 
-    private Timer timerBoard = new Timer(1000 / 60, this); // 60FPS
+    // Algorithm types
+    private JRadioButton rbBFS = new JRadioButton("Breadth-first search", true);
+    private JRadioButton rbDFS = new JRadioButton("Depth-first search");
+    private JRadioButton rbAStar = new JRadioButton("A* search algorithm");
+    private JRadioButton rbDijkstra = new JRadioButton("Dijkstra's algorithm");
+    private JButton butStartSearch = new JButton("Start pathfinding");
+
+    private Timer timerBoard = new Timer(1000 / 60, this); // 60FPS Timer
 
     // METHODS
     public JPanel getPanel() { // Return current panel
@@ -35,17 +42,26 @@ public class Board extends MouseAdapter implements ActionListener {
     public void setStartNode(Node startNode) {
         this.startNode = startNode;
         if (startNode == null) {
-            this.butStart.setText("Start node");
+            this.rbStartNode.setText("Start node");
         } else {
-            this.butStart.setText("Start node: (" + startNode.getX() + ", " + startNode.getY() + ")"); // TODO: Consider changing to non-array x/y coordinates (+1 to each val)
+            this.rbStartNode.setText("Start node: (" + startNode.getX() + ", " + startNode.getY() + ")"); // TODO: Consider changing to non-array x/y coordinates (+1 to each val)
         }
+        updateStartSearchButton();
     }
     public void setEndNode(Node endNode) {
         this.endNode = endNode;
         if (endNode == null) {
-            this.butEnd.setText("End node");
+            this.rbEndNode.setText("End node");
         } else {
-            this.butEnd.setText("End node: (" + endNode.getX() + ", " + endNode.getY() + ")"); // TODO: Consider changing to non-array x/y coordinates (+1 to each val)
+            this.rbEndNode.setText("End node: (" + endNode.getX() + ", " + endNode.getY() + ")"); // TODO: Consider changing to non-array x/y coordinates (+1 to each val)
+        }
+        updateStartSearchButton();
+    }
+    public void updateStartSearchButton() {
+        if (getStartNode() != null && getEndNode() != null) { // If there are start/end nodes set, allow start button to be pressed
+            this.butStartSearch.setEnabled(true);
+        } else {
+            this.butStartSearch.setEnabled(false);
         }
     }
 
@@ -83,13 +99,13 @@ public class Board extends MouseAdapter implements ActionListener {
             int gridY = mouseY / this.nodeSideLength;
 
             if (SwingUtilities.isLeftMouseButton(evt) && this.grid[gridY][gridX].isEmpty()) { // Left click (draw)
-                if (this.butStart.isSelected() && this.startNode == null) { // Checks which draw tool is selected. Also limits only one start/end node
+                if (this.rbStartNode.isSelected() && this.startNode == null) { // Checks which draw tool is selected. Also limits only one start/end node
                     this.grid[gridY][gridX].setStart();
                     setStartNode(this.grid[gridY][gridX]);
-                } else if (this.butEnd.isSelected() && this.endNode == null) {
+                } else if (this.rbEndNode.isSelected() && this.endNode == null) {
                     this.grid[gridY][gridX].setEnd();
                     setEndNode(this.grid[gridY][gridX]);
-                } else if (this.butBarrier.isSelected()) {
+                } else if (this.rbBarrierNode.isSelected()) {
                     this.grid[gridY][gridX].setBarrier();
                 }
             } else if (SwingUtilities.isRightMouseButton(evt)) { // Right click (erase)
@@ -109,13 +125,13 @@ public class Board extends MouseAdapter implements ActionListener {
             int gridY = mouseY / this.nodeSideLength;
 
             if (SwingUtilities.isLeftMouseButton(evt) && this.grid[gridY][gridX].isEmpty()) { // Left click (draw)
-                if (this.butStart.isSelected() && this.startNode == null) { // Checks which draw tool is selected. Also limits only one start/end node
+                if (this.rbStartNode.isSelected() && this.startNode == null) { // Checks which draw tool is selected. Also limits only one start/end node
                     this.grid[gridY][gridX].setStart();
                     setStartNode(this.grid[gridY][gridX]);
-                } else if (this.butEnd.isSelected() && this.endNode == null) {
+                } else if (this.rbEndNode.isSelected() && this.endNode == null) {
                     this.grid[gridY][gridX].setEnd();
                     setEndNode(this.grid[gridY][gridX]);
-                } else if (this.butBarrier.isSelected()) {
+                } else if (this.rbBarrierNode.isSelected()) {
                     this.grid[gridY][gridX].setBarrier();
                 }
             } else if (SwingUtilities.isRightMouseButton(evt)) { // Right click (erase)
@@ -138,34 +154,69 @@ public class Board extends MouseAdapter implements ActionListener {
         //this.boardPanel.setBackground(Color.DARK_GRAY);
 
         // Draw tool radio buttons
-        this.boardPanel.add(this.butStart);
-        this.butStart.setBounds(20,100,200,20);
-        this.butStart.setFocusable(false);
-        this.butStart.addActionListener(this);
+        this.boardPanel.add(this.rbStartNode);
+        this.rbStartNode.setBounds(20,100,200,20);
+        this.rbStartNode.setFocusable(false);
+        this.rbStartNode.addActionListener(this);
 
-        this.boardPanel.add(this.butEnd);
-        this.butEnd.setBounds(20,100+(20),200,20);
-        this.butEnd.setFocusable(false);
-        this.butEnd.addActionListener(this);
+        this.boardPanel.add(this.rbEndNode);
+        this.rbEndNode.setBounds(20,100+(20),200,20);
+        this.rbEndNode.setFocusable(false);
+        this.rbEndNode.addActionListener(this);
 
-        this.boardPanel.add(this.butBarrier);
-        this.butBarrier.setBounds(20,100+(20*2),100,20);
-        this.butBarrier.setFocusable(false);
-        this.butBarrier.addActionListener(this);
+        this.boardPanel.add(this.rbBarrierNode);
+        this.rbBarrierNode.setBounds(20,100+(20*2),100,20);
+        this.rbBarrierNode.setFocusable(false);
+        this.rbBarrierNode.addActionListener(this);
 
         this.boardPanel.add(this.labelErase);
         this.labelErase.setBounds(20,100+(20*3),150,20);
 
         this.boardPanel.add(this.butClear);
-        this.butClear.setBounds(20,100+(20*5),100,40);
+        this.butClear.setBounds(20,100+(20*5),150,40);
         this.butClear.setFocusable(false);
         this.butClear.addActionListener(this);
 
         ButtonGroup drawTools = new ButtonGroup(); // Only allows one draw tool radio button to be pressed at a time
-        drawTools.add(this.butStart);
-        drawTools.add(this.butEnd);
-        drawTools.add(this.butBarrier);
+        drawTools.add(this.rbStartNode);
+        drawTools.add(this.rbEndNode);
+        drawTools.add(this.rbBarrierNode);
 
+        // Algorithm type radio buttons
+        this.boardPanel.add(this.rbBFS);
+        this.rbBFS.setBounds(20,300,200,20);
+        this.rbBFS.setFocusable(false);
+        this.rbBFS.addActionListener(this);
+
+        this.boardPanel.add(this.rbDFS);
+        this.rbDFS.setBounds(20,300+(20),200,20);
+        this.rbDFS.setFocusable(false);
+        this.rbDFS.addActionListener(this);
+
+        this.boardPanel.add(this.rbAStar);
+        this.rbAStar.setBounds(20,300+(20*2),200,20);
+        this.rbAStar.setFocusable(false);
+        this.rbAStar.addActionListener(this);
+
+        this.boardPanel.add(this.rbDijkstra);
+        this.rbDijkstra.setBounds(20,300+(20*3),200,20);
+        this.rbDijkstra.setFocusable(false);
+        this.rbDijkstra.addActionListener(this);
+
+        this.boardPanel.add(this.butStartSearch);
+        this.butStartSearch.setBounds(20,300+(20*5),150,40);
+        this.butStartSearch.setFocusable(false);
+        this.butStartSearch.addActionListener(this);
+        this.butStartSearch.setEnabled(false); // Set to false until start/end nodes are created
+        //this.butStartSearch.setBackground(Color.GREEN);
+
+        ButtonGroup algoTypes = new ButtonGroup(); // Only allows one draw tool radio button to be pressed at a time
+        algoTypes.add(this.rbBFS);
+        algoTypes.add(this.rbDFS);
+        algoTypes.add(this.rbAStar);
+        algoTypes.add(this.rbDijkstra);
+
+        // Generate node grid
         generateGrid(25); // TODO: limit range from 8-40; default 25
 
         this.timerBoard.start(); // 60FPS timer
