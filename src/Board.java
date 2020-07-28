@@ -16,6 +16,7 @@ public class Board extends MouseAdapter implements ActionListener {
     private JRadioButton butStart = new JRadioButton("Start node", true);
     private JRadioButton butEnd = new JRadioButton("End node");
     private JRadioButton butBarrier = new JRadioButton("Barrier node");
+    private JLabel labelErase = new JLabel("Right click to erase nodes");
     private JButton butClear = new JButton("Clear grid");
 
     private Timer timerBoard = new Timer(1000 / 60, this); // 60FPS
@@ -130,8 +131,11 @@ public class Board extends MouseAdapter implements ActionListener {
         this.butBarrier.setFocusable(false);
         this.butBarrier.addActionListener(this);
 
+        this.boardPanel.add(this.labelErase);
+        this.labelErase.setBounds(20,100+(20*3),150,20);
+
         this.boardPanel.add(this.butClear);
-        this.butClear.setBounds(20,100+(20*4),100,40);
+        this.butClear.setBounds(20,100+(20*5),100,40);
         this.butClear.setFocusable(false);
         this.butClear.addActionListener(this);
 
