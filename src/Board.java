@@ -16,7 +16,7 @@ public class Board extends MouseAdapter implements ActionListener {
     private JRadioButton rbEndNode = new JRadioButton("End node");
     private JRadioButton rbBarrierNode = new JRadioButton("Barrier node");
     private JLabel labelErase = new JLabel("Right click to erase nodes");
-    private JButton butClear = new JButton("Clear grid");
+    private JButton butClearGrid = new JButton("Clear grid");
 
     // Algorithm types
     private JRadioButton rbBFS = new JRadioButton("Breadth-first search", true);
@@ -84,11 +84,17 @@ public class Board extends MouseAdapter implements ActionListener {
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == this.timerBoard) { // 60FPS Timer
             this.boardPanel.repaint();
-        } else if (evt.getSource() == this.butClear) {
+        } else if (evt.getSource() == this.butClearGrid) {
             if (JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the grid?", "Warning",
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { // Confirm clear grid dialog. Yes option.
                 generateGrid(gridWidth);
             } else { // No option
+            }
+        } else if (evt.getSource() == this.butStartSearch) { // Start pathfinding TODO: finish methods
+            if (this.rbBFS.isSelected()) { // Breadth-first search
+            } else if (this.rbDFS.isSelected()) { // Depth-first search
+            } else if (this.rbAStar.isSelected()) { // A* search algorithm
+            } else if (this.rbDijkstra.isSelected()) { // Dijkstra's algorithm
             }
         }
     }
@@ -172,10 +178,10 @@ public class Board extends MouseAdapter implements ActionListener {
         this.boardPanel.add(this.labelErase);
         this.labelErase.setBounds(20,100+(20*3),150,20);
 
-        this.boardPanel.add(this.butClear);
-        this.butClear.setBounds(20,100+(20*5),150,40);
-        this.butClear.setFocusable(false);
-        this.butClear.addActionListener(this);
+        this.boardPanel.add(this.butClearGrid);
+        this.butClearGrid.setBounds(20,100+(20*5),150,40);
+        this.butClearGrid.setFocusable(false);
+        this.butClearGrid.addActionListener(this);
 
         ButtonGroup drawTools = new ButtonGroup(); // Only allows one draw tool radio button to be pressed at a time
         drawTools.add(this.rbStartNode);
