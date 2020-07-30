@@ -45,7 +45,7 @@ public class Board extends MouseAdapter implements ActionListener {
         if (startNode == null) {
             this.rbStartNode.setText("Start node");
         } else {
-            this.rbStartNode.setText("Start node: (" + startNode.getX() + ", " + startNode.getY() + ")"); // TODO: Consider changing to non-array x/y coordinates (+1 to each val)
+            this.rbStartNode.setText("Start node: (" + (startNode.getX()+1) + ", " + (startNode.getY()+1) + ")"); // Shows where start node is located. (uses non-array x/y coordinates (+1 to each val))
         }
         updateStartSearchButton();
     }
@@ -54,7 +54,7 @@ public class Board extends MouseAdapter implements ActionListener {
         if (endNode == null) {
             this.rbEndNode.setText("End node");
         } else {
-            this.rbEndNode.setText("End node: (" + endNode.getX() + ", " + endNode.getY() + ")"); // TODO: Consider changing to non-array x/y coordinates (+1 to each val)
+            this.rbEndNode.setText("End node: (" + (endNode.getX()+1) + ", " + (endNode.getY()+1) + ")"); // Shows where end node is located. (uses non-array x/y coordinates (+1 to each val))
         }
         updateStartSearchButton();
     }
@@ -101,7 +101,7 @@ public class Board extends MouseAdapter implements ActionListener {
             }
         } else if (evt.getSource() == this.butStartSearch) { // Start pathfinding TODO: finish methods
             Pathfinder pathfinder = new Pathfinder(this.grid, this.startNode, this.endNode);
-            ArrayList<Node> path = new ArrayList<>();
+            ArrayList<Node> path;
 
             if (this.rbBFS.isSelected()) { // Breadth-first search
             } else if (this.rbDFS.isSelected()) { // Depth-first search
@@ -113,32 +113,12 @@ public class Board extends MouseAdapter implements ActionListener {
         }
     }
     public void mousePressed(MouseEvent evt) {
-        int mouseX = evt.getX(), mouseY = evt.getY();
-        if (mouseX >= Main.MENU_WIDTH && mouseX < Main.FRAME_WIDTH && mouseY >= 0 && mouseY < Main.FRAME_HEIGHT && this.grid != null) { // Mouse pointer is within grid (not in menu bar)
-            int gridX = (mouseX-Main.MENU_WIDTH) / this.nodeSideLength;
-            int gridY = mouseY / this.nodeSideLength;
-
-            if (SwingUtilities.isLeftMouseButton(evt) && this.grid[gridY][gridX].isEmpty()) { // Left click (draw)
-                if (this.rbStartNode.isSelected() && this.startNode == null) { // Checks which draw tool is selected. Also limits only one start/end node
-                    this.grid[gridY][gridX].setStart();
-                    setStartNode(this.grid[gridY][gridX]);
-                } else if (this.rbEndNode.isSelected() && this.endNode == null) {
-                    this.grid[gridY][gridX].setEnd();
-                    setEndNode(this.grid[gridY][gridX]);
-                } else if (this.rbBarrierNode.isSelected()) {
-                    this.grid[gridY][gridX].setBarrier();
-                }
-            } else if (SwingUtilities.isRightMouseButton(evt)) { // Right click (erase)
-                if (this.grid[gridY][gridX].isStart()) { // Reset start/end node if it exists
-                    setStartNode(null);
-                } else if (this.grid[gridY][gridX].isEnd()) {
-                    setEndNode(null);
-                }
-                this.grid[gridY][gridX].setEmpty();
-            }
-        }
+        mouseDrawing(evt);
     }
     public void mouseDragged(MouseEvent evt) {
+        mouseDrawing(evt);
+    }
+    public void mouseDrawing(MouseEvent evt) { // Method for draw tools (aggregates mousePressed & mouseDragged)
         int mouseX = evt.getX(), mouseY = evt.getY();
         if (mouseX >= Main.MENU_WIDTH && mouseX < Main.FRAME_WIDTH && mouseY >= 0 && mouseY < Main.FRAME_HEIGHT && this.grid != null) { // Mouse pointer is within grid (not in menu bar)
             int gridX = (mouseX-Main.MENU_WIDTH) / this.nodeSideLength;
