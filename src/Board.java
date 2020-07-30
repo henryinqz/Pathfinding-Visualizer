@@ -75,7 +75,7 @@ public class Board extends MouseAdapter implements ActionListener {
         }
 
         this.gridWidth = width;
-        this.nodeSideLength = GUI.FRAME_HEIGHT/Board.grid.length;
+        this.nodeSideLength = Main.FRAME_HEIGHT/Board.grid.length;
 
         setStartNode(null); // Reset start/end nodes
         setEndNode(null);
@@ -114,8 +114,8 @@ public class Board extends MouseAdapter implements ActionListener {
     }
     public void mousePressed(MouseEvent evt) {
         int mouseX = evt.getX(), mouseY = evt.getY();
-        if (mouseX >= GUI.MENU_WIDTH && mouseX < GUI.FRAME_WIDTH && mouseY >= 0 && mouseY < GUI.FRAME_HEIGHT && this.grid != null) { // Mouse pointer is within grid (not in menu bar)
-            int gridX = (mouseX-GUI.MENU_WIDTH) / this.nodeSideLength;
+        if (mouseX >= Main.MENU_WIDTH && mouseX < Main.FRAME_WIDTH && mouseY >= 0 && mouseY < Main.FRAME_HEIGHT && this.grid != null) { // Mouse pointer is within grid (not in menu bar)
+            int gridX = (mouseX-Main.MENU_WIDTH) / this.nodeSideLength;
             int gridY = mouseY / this.nodeSideLength;
 
             if (SwingUtilities.isLeftMouseButton(evt) && this.grid[gridY][gridX].isEmpty()) { // Left click (draw)
@@ -140,8 +140,8 @@ public class Board extends MouseAdapter implements ActionListener {
     }
     public void mouseDragged(MouseEvent evt) {
         int mouseX = evt.getX(), mouseY = evt.getY();
-        if (mouseX >= GUI.MENU_WIDTH && mouseX < GUI.FRAME_WIDTH && mouseY >= 0 && mouseY < GUI.FRAME_HEIGHT && this.grid != null) { // Mouse pointer is within grid (not in menu bar)
-            int gridX = (mouseX-GUI.MENU_WIDTH) / this.nodeSideLength;
+        if (mouseX >= Main.MENU_WIDTH && mouseX < Main.FRAME_WIDTH && mouseY >= 0 && mouseY < Main.FRAME_HEIGHT && this.grid != null) { // Mouse pointer is within grid (not in menu bar)
+            int gridX = (mouseX-Main.MENU_WIDTH) / this.nodeSideLength;
             int gridY = mouseY / this.nodeSideLength;
 
             if (SwingUtilities.isLeftMouseButton(evt) && this.grid[gridY][gridX].isEmpty()) { // Left click (draw)
@@ -167,7 +167,7 @@ public class Board extends MouseAdapter implements ActionListener {
 
     // CONSTRUCTOR
     public Board() {
-        this.boardPanel.setPreferredSize(new Dimension(GUI.FRAME_WIDTH, GUI.FRAME_HEIGHT));
+        this.boardPanel.setPreferredSize(new Dimension(Main.FRAME_WIDTH, Main.FRAME_HEIGHT));
         this.boardPanel.setLayout(null);
         this.boardPanel.addMouseListener(this);
         this.boardPanel.addMouseMotionListener(this);
@@ -252,17 +252,17 @@ public class Board extends MouseAdapter implements ActionListener {
 
     public void drawGrid(Graphics g, Node[][] grid, int sideLength) {
         for (int i=0; i<=grid.length; i++) { // Horizontal grid lines
-            g.drawLine(GUI.MENU_WIDTH,i*sideLength, GUI.FRAME_WIDTH,i*sideLength);
+            g.drawLine(Main.MENU_WIDTH,i*sideLength, Main.FRAME_WIDTH,i*sideLength);
         }
         for (int j=0; j<=grid[0].length; j++) { // Vertical grid lines
-           g.drawLine(GUI.MENU_WIDTH+(j*sideLength), 0, GUI.MENU_WIDTH+(j*sideLength), GUI.FRAME_HEIGHT);
+           g.drawLine(Main.MENU_WIDTH+(j*sideLength), 0, Main.MENU_WIDTH+(j*sideLength), Main.FRAME_HEIGHT);
         }
     }
     public void drawNodes(Graphics g, Node[][] grid, int sideLength) {
         for (int i=0; i<grid.length; i++) {
             for (int j=0; j<grid[i].length; j++) {
                 g.setColor(grid[i][j].getColor());
-                g.fillRect(GUI.MENU_WIDTH+(j*sideLength), i*sideLength, sideLength, sideLength); // Draw node
+                g.fillRect(Main.MENU_WIDTH+(j*sideLength), i*sideLength, sideLength, sideLength); // Draw node
             }
         }
         g.setColor(Color.BLACK);
