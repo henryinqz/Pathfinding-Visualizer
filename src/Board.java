@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 public class Board extends MouseAdapter implements ActionListener {
     // PROPERTIES
@@ -19,8 +20,8 @@ public class Board extends MouseAdapter implements ActionListener {
     private JButton butClearGrid = new JButton("Clear grid");
 
     // Algorithm types
-    private JRadioButton rbBFS = new JRadioButton("Breadth-first search", true);
-    private JRadioButton rbDFS = new JRadioButton("Depth-first search");
+    private JRadioButton rbBFS = new JRadioButton("Breadth-first search");
+    private JRadioButton rbDFS = new JRadioButton("Depth-first search", true);
     private JRadioButton rbAStar = new JRadioButton("A* search algorithm");
     private JRadioButton rbDijkstra = new JRadioButton("Dijkstra's algorithm");
     private JButton butStartSearch = new JButton("Start pathfinding");
@@ -67,9 +68,9 @@ public class Board extends MouseAdapter implements ActionListener {
 
     public void generateGrid(int width) { // Generate a square grid
         this.grid = new Node[width][width];
-        for (int i=0; i < width; i++) { // Load Node grid/array
-            for (int j=0; j < width; j++) {
-                this.grid[i][j] = new Node(i,j);
+        for (int y=0; y < width; y++) { // Load Node grid/array
+            for (int x=0; x < width; x++) {
+                this.grid[y][x] = new Node(x,y);
             }
         }
 
@@ -78,6 +79,14 @@ public class Board extends MouseAdapter implements ActionListener {
 
         setStartNode(null); // Reset start/end nodes
         setEndNode(null);
+    }
+
+    public void connectPath(ArrayList<Node> path) {
+        for (Node pathNode : path) {
+            if (!pathNode.isStart() && !pathNode.isEnd()) {
+                pathNode.setClosed();
+            }
+        }
     }
 
     // Listener methods (ActionListener, MouseListener/MouseMotionListener/MouseAdapter)
@@ -91,8 +100,13 @@ public class Board extends MouseAdapter implements ActionListener {
             } else { // No option
             }
         } else if (evt.getSource() == this.butStartSearch) { // Start pathfinding TODO: finish methods
+            Pathfinder pathfinder = new Pathfinder(this.grid, this.startNode, this.endNode);
+            ArrayList<Node> path = new ArrayList<>();
+
             if (this.rbBFS.isSelected()) { // Breadth-first search
             } else if (this.rbDFS.isSelected()) { // Depth-first search
+                path = pathfinder.dfs();
+                connectPath(path);
             } else if (this.rbAStar.isSelected()) { // A* search algorithm
             } else if (this.rbDijkstra.isSelected()) { // Dijkstra's algorithm
             }

@@ -7,6 +7,8 @@ public class Node {
 
     private Color color; // WHITE=empty, BLACK=barrier, GREEN=start, RED=end
     private final Color EMPTY_NODE = Color.WHITE, BARRIER_NODE = Color.BLACK, START_NODE = Color.GREEN, END_NODE = Color.RED;
+    private final Color CLOSED_NODE = new Color(0,200,255);
+    private boolean visited = false;
 
     // METHODS
     public static boolean isEqual(Node start, Node end) {
@@ -51,6 +53,13 @@ public class Node {
     public boolean isEnd() {
         return this.color == END_NODE;
     }
+    public boolean isClosed() {
+        return this.color == CLOSED_NODE;
+    }
+    public boolean isVisited() {
+        return this.visited;
+    }
+
 
     // Setters
     public void setPos(int x, int y) {
@@ -81,6 +90,10 @@ public class Node {
     public void setEnd() {
         this.color = END_NODE;
     }
+    public void setClosed() {
+        this.color = CLOSED_NODE;
+    }
+    public void setVisited(boolean isVisited) { this.visited = isVisited; }
 
     // CONSTRUCTOR
     public Node(int x, int y) {
@@ -91,7 +104,7 @@ public class Node {
     public Node(int x, int y, Color color) {
         this.x = x;
         this.y = y;
-        if (color == EMPTY_NODE || color == BARRIER_NODE || color == START_NODE || color == END_NODE) { // Restrict node colours
+        if (color == EMPTY_NODE || color == BARRIER_NODE || color == START_NODE || color == END_NODE || color == CLOSED_NODE) { // Restrict node colours
             this.color = color;
         } else { // If node color is not empty/barrier/start/end, default to empty
             this.color = EMPTY_NODE;
