@@ -28,6 +28,7 @@ public class Board extends MouseAdapter implements ActionListener {
     private JButton butStartSearch = new JButton("Start pathfinding");
 
     private Timer timerBoard = new Timer(1000 / 60, this); // 60FPS Timer
+    private int refreshInterval = 10; // Used for connect path thread to adjust refresh interval for adding pathfinding nodes TODO: add speed toggle
 
     // METHODS
     public JPanel getPanel() { // Return current panel
@@ -83,11 +84,18 @@ public class Board extends MouseAdapter implements ActionListener {
     }
 
     public void connectPath(ArrayList<Node> path) {
-        for (Node pathNode : path) {
-            if (!pathNode.isStart() && !pathNode.isEnd()) {
-                pathNode.setClosed();
+        Thread t1 = new Thread(() -> {
+            for (Node pathNode : path) {
+                if (!pathNode.isStart() && !pathNode.isEnd()) {
+                    pathNode.setSearched();
+                    try {
+                        Thread.sleep(refreshInterval); // Delay before next path node is added to grid
+                    } catch(InterruptedException e) {
+                    }
+                }
             }
-        }
+        });
+        t1.start();
     }
 
     // Listener methods (ActionListener, MouseListener/MouseMotionListener/MouseAdapter)
