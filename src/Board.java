@@ -18,6 +18,7 @@ public class Board extends MouseAdapter implements ActionListener {
     private JRadioButton rbBarrierNode = new JRadioButton("Barrier node");
     private JLabel labelErase = new JLabel("Right click to erase nodes");
     private JButton butClearGrid = new JButton("Clear grid");
+    private boolean disableDraw = false;
 
     // Algorithm types
     private JRadioButton rbBFS = new JRadioButton("Breadth-first search");
@@ -94,12 +95,17 @@ public class Board extends MouseAdapter implements ActionListener {
         if (evt.getSource() == this.timerBoard) { // 60FPS Timer
             this.boardPanel.repaint();
         } else if (evt.getSource() == this.butClearGrid) {
+            disableDrawing(false); // Enable drawing
+
             if (JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the grid?", "Warning",
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { // Confirm clear grid dialog. Yes option.
                 generateGrid(gridWidth);
             } else { // No option
             }
         } else if (evt.getSource() == this.butStartSearch) { // Start pathfinding TODO: finish methods
+            disableDrawing(true); // Prevent drawing during pathfinding
+
+            // TODO: if pathfinding, replace function of button to pause
             Pathfinder pathfinder = new Pathfinder(this.grid, this.startNode, this.endNode);
             ArrayList<Node> path;
 
@@ -124,24 +130,38 @@ public class Board extends MouseAdapter implements ActionListener {
             int gridX = (mouseX-Main.MENU_WIDTH) / this.nodeSideLength;
             int gridY = mouseY / this.nodeSideLength;
 
-            if (SwingUtilities.isLeftMouseButton(evt) && this.grid[gridY][gridX].isEmpty()) { // Left click (draw)
-                if (this.rbStartNode.isSelected() && this.startNode == null) { // Checks which draw tool is selected. Also limits only one start/end node
-                    this.grid[gridY][gridX].setStart();
-                    setStartNode(this.grid[gridY][gridX]);
-                } else if (this.rbEndNode.isSelected() && this.endNode == null) {
-                    this.grid[gridY][gridX].setEnd();
-                    setEndNode(this.grid[gridY][gridX]);
-                } else if (this.rbBarrierNode.isSelected()) {
-                    this.grid[gridY][gridX].setBarrier();
+            if (this.disableDraw == false) { // Drawing is enabled
+                if (SwingUtilities.isLeftMouseButton(evt) && this.grid[gridY][gridX].isEmpty()) { // Left click (draw)
+                    if (this.rbStartNode.isSelected() && this.startNode == null) { // Checks which draw tool is selected. Also limits only one start/end node
+                        this.grid[gridY][gridX].setStart();
+                        setStartNode(this.grid[gridY][gridX]);
+                    } else if (this.rbEndNode.isSelected() && this.endNode == null) {
+                        this.grid[gridY][gridX].setEnd();
+                        setEndNode(this.grid[gridY][gridX]);
+                    } else if (this.rbBarrierNode.isSelected()) {
+                        this.grid[gridY][gridX].setBarrier();
+                    }
+                } else if (SwingUtilities.isRightMouseButton(evt)) { // Right click (erase)
+                    if (this.grid[gridY][gridX].isStart()) { // Reset start/end node if it exists
+                        setStartNode(null);
+                    } else if (this.grid[gridY][gridX].isEnd()) {
+                        setEndNode(null);
+                    }
+                    this.grid[gridY][gridX].setEmpty();
                 }
-            } else if (SwingUtilities.isRightMouseButton(evt)) { // Right click (erase)
-                if (this.grid[gridY][gridX].isStart()) { // Reset start/end node if it exists
-                    setStartNode(null);
-                } else if (this.grid[gridY][gridX].isEnd()) {
-                    setEndNode(null);
-                }
-                this.grid[gridY][gridX].setEmpty();
             }
+        }
+    }
+    public void disableDrawing(boolean disableDraw) {
+        this.disableDraw = disableDraw;
+        if (this.disableDraw == true) { // Drawing has been disabled; prevent changes to draw tool radio buttons
+            this.rbStartNode.setEnabled(false);
+            this.rbEndNode.setEnabled(false);
+            this.rbBarrierNode.setEnabled(false);
+        } else { // Drawing has been enabled; allow changes to draw tool radio buttons
+            this.rbStartNode.setEnabled(true);
+            this.rbEndNode.setEnabled(true);
+            this.rbBarrierNode.setEnabled(true);
         }
     }
 

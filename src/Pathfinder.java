@@ -20,7 +20,7 @@ public class Pathfinder {
     }
     private void dfsRecursive(int currentX, int currentY) {
         if (this.grid[endNode.getY()][endNode.getX()].isVisited()) { // Exit method if endNode has been found
-            System.out.println("End found; returning");
+            System.out.println("DFS: End found; returning");
             return;
         } else if (currentY < 0 || currentY >= grid.length || currentX < 0 || currentX >= grid[currentY].length || this.grid[currentY][currentX].isBarrier() || this.grid[currentY][currentX].isVisited()) { // Exit method if out of bounds or on closed node(?)
             return;
