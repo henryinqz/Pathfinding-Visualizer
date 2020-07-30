@@ -27,8 +27,14 @@ public class Board extends MouseAdapter implements ActionListener {
     private JRadioButton rbDijkstra = new JRadioButton("Dijkstra's algorithm");
     private JButton butStartSearch = new JButton("Start pathfinding");
 
-    private Timer timerBoard = new Timer(1000 / 60, this); // 60FPS Timer
+    private boolean pathfindingOngoing = false;
+    private boolean pathfindingPaused = false;
+
+    private Thread timerPathNodeRefresh;
     private int refreshInterval = 10; // Used for connect path thread to adjust refresh interval for adding pathfinding nodes TODO: add speed toggle
+
+    private Timer timerBoard = new Timer(1000 / 60, this); // 60FPS Timer
+
 
     // METHODS
     public JPanel getPanel() { // Return current panel
@@ -83,19 +89,25 @@ public class Board extends MouseAdapter implements ActionListener {
         setEndNode(null);
     }
 
-    public void connectPath(ArrayList<Node> path) {
-        Thread t1 = new Thread(() -> {
+    public void connectPath(ArrayList<Node> path) { // Add path to grid
+        this.timerPathNodeRefresh = new Thread(() -> {
             for (Node pathNode : path) {
                 if (!pathNode.isStart() && !pathNode.isEnd()) {
                     pathNode.setSearched();
                     try {
-                        Thread.sleep(refreshInterval); // Delay before next path node is added to grid
+                        Thread.sleep(this.refreshInterval); // Delay before next path node is added to grid
                     } catch(InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    while (this.pathfindingPaused == true) { // Loop to pause
                     }
                 }
             }
+            this.pathfindingOngoing = false;
+            this.pathfindingPaused = false;
+            this.butStartSearch.setText("Start pathfinding");
         });
-        t1.start();
+        this.timerPathNodeRefresh.start();
     }
 
     // Listener methods (ActionListener, MouseListener/MouseMotionListener/MouseAdapter)
@@ -103,26 +115,45 @@ public class Board extends MouseAdapter implements ActionListener {
         if (evt.getSource() == this.timerBoard) { // 60FPS Timer
             this.boardPanel.repaint();
         } else if (evt.getSource() == this.butClearGrid) {
-            disableDrawing(false); // Enable drawing
+
 
             if (JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the grid?", "Warning",
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { // Confirm clear grid dialog. Yes option.
-                generateGrid(gridWidth);
+                generateGrid(gridWidth); // Regenerate grid
+                disableDrawing(false); // Enable drawing
+
+                this.pathfindingOngoing = false;
+                this.pathfindingPaused = false;
             } else { // No option
             }
         } else if (evt.getSource() == this.butStartSearch) { // Start pathfinding TODO: finish methods
             disableDrawing(true); // Prevent drawing during pathfinding
 
-            // TODO: if pathfinding, replace function of button to pause
-            Pathfinder pathfinder = new Pathfinder(this.grid, this.startNode, this.endNode);
-            ArrayList<Node> path;
+            if (this.pathfindingOngoing == true) { // Pathfinding is ongoing
+                if (this.pathfindingPaused == true) { // Pathfinding is currently paused and will be resumed
+                    this.butStartSearch.setText("Pause pathfinding");
+                    this.pathfindingPaused = false;
+                } else { // Pathfinding is currently ongoing and will be paused
+                    this.butStartSearch.setText("Resume pathfinding");
+                    this.pathfindingPaused = true;
+                }
+            } else { // Not searching yet
+                this.pathfindingOngoing = true;
+                this.pathfindingPaused = false;
+                this.butStartSearch.setText("Pause pathfinding");
 
-            if (this.rbBFS.isSelected()) { // Breadth-first search
-            } else if (this.rbDFS.isSelected()) { // Depth-first search
-                path = pathfinder.dfs();
-                connectPath(path);
-            } else if (this.rbAStar.isSelected()) { // A* search algorithm
-            } else if (this.rbDijkstra.isSelected()) { // Dijkstra's algorithm
+                Pathfinder pathfinder = new Pathfinder(this.grid, this.startNode, this.endNode);
+                ArrayList<Node> path;
+
+
+                if (this.rbBFS.isSelected()) { // Breadth-first search
+                } else if (this.rbDFS.isSelected()) { // Depth-first search
+                    path = pathfinder.dfs();
+                    connectPath(path);
+                } else if (this.rbAStar.isSelected()) { // A* search algorithm
+                } else if (this.rbDijkstra.isSelected()) { // Dijkstra's algorithm
+                }
+
             }
         }
     }
