@@ -22,8 +22,8 @@ public class Board extends MouseAdapter implements ActionListener {
     private boolean disableDraw = false;
 
     // Algorithm types
-    private JRadioButton rbBFS = new JRadioButton("Breadth-first search");
-    private JRadioButton rbDFS = new JRadioButton("Depth-first search", true);
+    private JRadioButton rbBFS = new JRadioButton("Breadth-first search", true);
+    private JRadioButton rbDFS = new JRadioButton("Depth-first search");
     private JRadioButton rbAStar = new JRadioButton("A* search algorithm");
     private JRadioButton rbDijkstra = new JRadioButton("Dijkstra's algorithm");
     private JButton butStartSearch = new JButton("Start pathfinding");
@@ -107,7 +107,6 @@ public class Board extends MouseAdapter implements ActionListener {
         }
     }
 
-
     public void connectPath(ArrayList<Node> path) { // Add path to grid
         this.timerPathNodeRefresh = new Thread(() -> {
             for (Node pathNode : path) { // Loop through path to add to grid
@@ -133,6 +132,34 @@ public class Board extends MouseAdapter implements ActionListener {
         });
         this.timerPathNodeRefresh.start();
     }
+    public void connectPathMultiple(ArrayList<ArrayList<Node>> listPaths) { // Add multiple paths to grid
+        this.timerPathNodeRefresh = new Thread(() -> {
+            for (ArrayList<Node> path : listPaths) {
+                for (Node pathNode : path) { // Loop through path to add to grid
+                    while (this.pathfindingPaused == true) {
+                    } // Loop to pause pathfinding
+
+                    if (!pathNode.isStart() && !pathNode.isEnd()) { // Ignore start/end node to prevent drawing over
+                        pathNode.setSearched();
+                        try {
+                            Thread.sleep(this.refreshInterval); // Delay before next path node is added to grid
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                if (!path.contains(endNode)) { // TODO: Handle end node not found
+
+                }
+            }
+
+            // Reset variables after pathfinding complete
+            this.pathfindingOngoing = false;
+            this.pathfindingPaused = false;
+            this.butStartSearch.setText("Start pathfinding");
+        });
+        this.timerPathNodeRefresh.start();
+    }
 
     // Listener methods (ActionListener, MouseListener/MouseMotionListener/MouseAdapter)
     public void actionPerformed(ActionEvent evt) {
@@ -141,6 +168,9 @@ public class Board extends MouseAdapter implements ActionListener {
         } else if (evt.getSource() == this.butResetGrid) {
             resetCurrentGrid(); // Clear pathfinding nodes
             disableDrawing(false); // Enable drawing
+
+            this.pathfindingOngoing = false;
+            this.pathfindingPaused = false;
         } else if (evt.getSource() == this.butClearGrid) {
             if (JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the grid?", "Warning",
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { // Confirm clear grid dialog. Yes option.
@@ -169,13 +199,11 @@ public class Board extends MouseAdapter implements ActionListener {
                 this.butStartSearch.setText("Pause pathfinding");
 
                 Pathfinder pathfinder = new Pathfinder(this.grid, this.startNode, this.endNode);
-                ArrayList<Node> path;
-
 
                 if (this.rbBFS.isSelected()) { // Breadth-first search
+                    connectPathMultiple(pathfinder.bfs());
                 } else if (this.rbDFS.isSelected()) { // Depth-first search
-                    path = pathfinder.dfs();
-                    connectPath(path);
+                    connectPath(pathfinder.dfs());
                 } else if (this.rbAStar.isSelected()) { // A* search algorithm
                 } else if (this.rbDijkstra.isSelected()) { // Dijkstra's algorithm
                 }

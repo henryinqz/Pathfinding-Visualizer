@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.util.ArrayList;
 
 public class Node {
     // PROPERTIES
@@ -6,8 +7,12 @@ public class Node {
     private Node parent;
 
     private Color color; // WHITE=empty, BLACK=barrier, GREEN=start, RED=end
-    public static final Color EMPTY_NODE = Color.WHITE, BARRIER_NODE = Color.BLACK, START_NODE = Color.GREEN, END_NODE = Color.RED;
-    private final Color SEARCHED_NODE = new Color(0,200,255);
+    public static final Color EMPTY_NODE = Color.WHITE,
+            BARRIER_NODE = Color.BLACK,
+            START_NODE = Color.GREEN,
+            END_NODE = Color.RED,
+            SEARCHED_NODE = new Color(0,200,255),
+            SEARCHED_NODE_2 = new Color(255, 215, 0);
     private boolean visited = false;
 
     // METHODS
@@ -91,7 +96,11 @@ public class Node {
         this.color = END_NODE;
     }
     public void setSearched() {
-        this.color = SEARCHED_NODE;
+        if (isSearched()) {
+            this.color = SEARCHED_NODE_2;
+        } else {
+            this.color = SEARCHED_NODE;
+        }
     }
     public void setVisited(boolean isVisited) { this.visited = isVisited; }
 

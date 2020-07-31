@@ -1,33 +1,87 @@
-import java.util.ArrayList;
+import java.util.*;
 
 public class Pathfinder {
     // PROPERTIES
-    private ArrayList<Node> open_list, closed_list, path;
+    private ArrayList<Node> open_list, closed_list, searchPath, shortPath;
     private Node[][] grid;
     private Node startNode, endNode, currentNode;
 
     // METHODS
-    public void bfs(Node[][] grid, Node startNode, Node endNode) { // Breadth-first search
+    // Breadth-first serach
+    public ArrayList<ArrayList<Node>> bfs() {
+        this.searchPath = new ArrayList<>();
+        this.shortPath = new ArrayList<>();
+        Queue<Node> queue = new LinkedList<Node>();
 
+        // BFS
+        queue.add(this.startNode);
+        this.grid[this.startNode.getY()][this.startNode.getX()].setVisited(true);
+        while (!queue.isEmpty()) {
+            if (this.grid[endNode.getY()][endNode.getX()].isVisited()) { // Exit method if endNode has been found
+                System.out.println("BFS: End found; breaking");
+
+                Node pathNode = this.grid[endNode.getY()][endNode.getX()]; // Get shortest path
+                while (pathNode.getParent() != null) {
+                    pathNode = pathNode.getParent();
+                    this.shortPath.add(pathNode);
+                }
+                Collections.reverse(this.shortPath);
+
+                break;
+            }
+
+            Node temp = queue.poll();
+            for (Node neighbor : getNeighbors(temp)) {
+                if (neighbor != null && !neighbor.isVisited() && !neighbor.isBarrier()) {
+                    queue.add(neighbor);
+                    neighbor.setVisited(true);
+
+                    neighbor.setParent(temp);
+                    this.searchPath.add(this.grid[neighbor.getY()][neighbor.getX()]);
+                }
+            }
+        }
+
+        return new ArrayList<>(Arrays.asList(this.searchPath, this.shortPath));
+    }
+    private ArrayList<Node> getNeighbors(Node node) {
+        ArrayList<Node> neighbors = new ArrayList<>();
+        int nodeX = node.getX();
+        int nodeY = node.getY();
+
+        // Check up, right, down, left + out of bound checks
+        if (nodeY > 0) { // Add upper neighbour
+            neighbors.add(this.grid[nodeY-1][nodeX]);
+        }
+        if (nodeY < this.grid.length-1) { // Add lower neighbour
+            neighbors.add(this.grid[nodeY+1][nodeX]);
+        }
+        if (nodeX > 0) { // Add Left neighbour
+            neighbors.add(this.grid[nodeY][nodeX-1]);
+        }
+        if (nodeX < this.grid[nodeY].length-1) { // Add right neighbour
+            neighbors.add(this.grid[nodeY][nodeX+1]);
+        }
+        return neighbors;
     }
 
     // Depth-first search
     public ArrayList<Node> dfs() {
-        this.path = new ArrayList();
+        this.searchPath = new ArrayList();
         dfsRecursive(this.startNode.getX(), this.startNode.getY());
 
-        return this.path;
+        return this.searchPath;
     }
     private void dfsRecursive(int currentX, int currentY) {
         if (this.grid[endNode.getY()][endNode.getX()].isVisited()) { // Exit method if endNode has been found
             System.out.println("DFS: End found; returning");
             return;
-        } else if (currentY < 0 || currentY >= grid.length || currentX < 0 || currentX >= grid[currentY].length || this.grid[currentY][currentX].isBarrier() || this.grid[currentY][currentX].isVisited()) { // Exit method if out of bounds or on closed node(?)
+        } else if (currentY < 0 || currentY >= this.grid.length || currentX < 0 || currentX >= this.grid[currentY].length || this.grid[currentY][currentX].isBarrier() || this.grid[currentY][currentX].isVisited()) { // Exit method if out of bounds or on closed node(?)
             return;
         }
 
         this.grid[currentY][currentX].setVisited(true);
-        this.path.add(this.grid[currentY][currentX]);
+        this.searchPath.add(this.grid[currentY][currentX]);
 
         dfsRecursive(currentX, currentY - 1); // Up
         dfsRecursive(currentX + 1, currentY); // Right
