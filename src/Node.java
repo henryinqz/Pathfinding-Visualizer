@@ -6,7 +6,7 @@ public class Node {
     private Node parent;
 
     private Color color; // WHITE=empty, BLACK=barrier, GREEN=start, RED=end
-    private final Color EMPTY_NODE = Color.WHITE, BARRIER_NODE = Color.BLACK, START_NODE = Color.GREEN, END_NODE = Color.RED;
+    public static final Color EMPTY_NODE = Color.WHITE, BARRIER_NODE = Color.BLACK, START_NODE = Color.GREEN, END_NODE = Color.RED;
     private final Color SEARCHED_NODE = new Color(0,200,255);
     private boolean visited = false;
 

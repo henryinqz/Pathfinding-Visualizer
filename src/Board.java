@@ -17,6 +17,7 @@ public class Board extends MouseAdapter implements ActionListener {
     private JRadioButton rbEndNode = new JRadioButton("End node");
     private JRadioButton rbBarrierNode = new JRadioButton("Barrier node");
     private JLabel labelErase = new JLabel("Right click to erase nodes");
+    private JButton butResetGrid = new JButton("Reset grid");
     private JButton butClearGrid = new JButton("Clear grid");
     private boolean disableDraw = false;
 
@@ -50,7 +51,7 @@ public class Board extends MouseAdapter implements ActionListener {
     }
     public void setStartNode(Node startNode) {
         this.startNode = startNode;
-        if (startNode == null) {
+        if (this.startNode == null) {
             this.rbStartNode.setText("Start node");
         } else {
             this.rbStartNode.setText("Start node: (" + (startNode.getX()+1) + ", " + (startNode.getY()+1) + ")"); // Shows where start node is located. (uses non-array x/y coordinates (+1 to each val))
@@ -74,7 +75,7 @@ public class Board extends MouseAdapter implements ActionListener {
         }
     }
 
-    public void generateGrid(int width) { // Generate a square grid
+    public void generateNewGrid(int width) { // Generate a square grid
         this.grid = new Node[width][width];
         for (int y=0; y < width; y++) { // Load Node grid/array
             for (int x=0; x < width; x++) {
@@ -88,21 +89,44 @@ public class Board extends MouseAdapter implements ActionListener {
         setStartNode(null); // Reset start/end nodes
         setEndNode(null);
     }
+    public void resetCurrentGrid() { // Clear pathfinding nodes (exclude start, end, & barrier nodes)
+        if (this.grid != null) {
+            for (int y = 0; y < this.gridWidth; y++) { // Load Node grid/array
+                for (int x = 0; x < this.gridWidth; x++) {
+                    if (this.grid[y][x].isStart()) {
+                        this.grid[y][x] = new Node(x,y, Node.START_NODE);
+                    } else if (this.grid[y][x].isEnd()) {
+                        this.grid[y][x] = new Node(x,y, Node.END_NODE);
+                    } else if (this.grid[y][x].isBarrier()) {
+                        this.grid[y][x] = new Node(x,y, Node.BARRIER_NODE);
+                    } else {
+                        this.grid[y][x] = new Node(x, y);
+                    }
+                }
+            }
+        }
+    }
+
 
     public void connectPath(ArrayList<Node> path) { // Add path to grid
         this.timerPathNodeRefresh = new Thread(() -> {
-            for (Node pathNode : path) {
-                if (!pathNode.isStart() && !pathNode.isEnd()) {
+            for (Node pathNode : path) { // Loop through path to add to grid
+                while (this.pathfindingPaused == true) { } // Loop to pause pathfinding
+
+                if (!pathNode.isStart() && !pathNode.isEnd()) { // Ignore start/end node to prevent drawing over
                     pathNode.setSearched();
                     try {
                         Thread.sleep(this.refreshInterval); // Delay before next path node is added to grid
                     } catch(InterruptedException e) {
                         e.printStackTrace();
                     }
-                    while (this.pathfindingPaused == true) { // Loop to pause
-                    }
                 }
             }
+            if (!path.contains(endNode)) { // TODO: Handle end node not found
+
+            }
+
+            // Reset variables after pathfinding complete
             this.pathfindingOngoing = false;
             this.pathfindingPaused = false;
             this.butStartSearch.setText("Start pathfinding");
@@ -114,12 +138,13 @@ public class Board extends MouseAdapter implements ActionListener {
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == this.timerBoard) { // 60FPS Timer
             this.boardPanel.repaint();
+        } else if (evt.getSource() == this.butResetGrid) {
+            resetCurrentGrid(); // Clear pathfinding nodes
+            disableDrawing(false); // Enable drawing
         } else if (evt.getSource() == this.butClearGrid) {
-
-
             if (JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the grid?", "Warning",
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { // Confirm clear grid dialog. Yes option.
-                generateGrid(gridWidth); // Regenerate grid
+                generateNewGrid(gridWidth); // Regenerate grid
                 disableDrawing(false); // Enable drawing
 
                 this.pathfindingOngoing = false;
@@ -138,6 +163,7 @@ public class Board extends MouseAdapter implements ActionListener {
                     this.pathfindingPaused = true;
                 }
             } else { // Not searching yet
+                resetCurrentGrid();
                 this.pathfindingOngoing = true;
                 this.pathfindingPaused = false;
                 this.butStartSearch.setText("Pause pathfinding");
@@ -231,8 +257,13 @@ public class Board extends MouseAdapter implements ActionListener {
         this.boardPanel.add(this.labelErase);
         this.labelErase.setBounds(20,100+(20*3),150,20);
 
+        this.boardPanel.add(this.butResetGrid);
+        this.butResetGrid.setBounds(20,100+(20*5),150,40);
+        this.butResetGrid.setFocusable(false);
+        this.butResetGrid.addActionListener(this);
+
         this.boardPanel.add(this.butClearGrid);
-        this.butClearGrid.setBounds(20,100+(20*5),150,40);
+        this.butClearGrid.setBounds(20,100+(20*7),150,40);
         this.butClearGrid.setFocusable(false);
         this.butClearGrid.addActionListener(this);
 
@@ -276,7 +307,7 @@ public class Board extends MouseAdapter implements ActionListener {
         algoTypes.add(this.rbDijkstra);
 
         // Generate node grid
-        generateGrid(25); // TODO: limit range from 8-40; default 25
+        generateNewGrid(25); // TODO: limit range from 8-40; default 25
 
         this.timerBoard.start(); // 60FPS timer
     }
