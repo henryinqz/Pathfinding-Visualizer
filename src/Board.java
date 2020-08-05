@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Board extends MouseAdapter implements ActionListener {
     // PROPERTIES
@@ -125,14 +126,11 @@ public class Board extends MouseAdapter implements ActionListener {
 
             }
 
-            // Reset variables after pathfinding complete
-            this.pathfindingOngoing = false;
-            this.pathfindingPaused = false;
-            this.butStartSearch.setText("Start pathfinding");
+            resetPathfinding(); // Reset variables after pathfinding complete
         });
         this.timerPathNodeRefresh.start();
     }
-    public void connectPathMultiple(ArrayList<ArrayList<Node>> listPaths) { // Add multiple paths to grid
+    public void connectMultiplePaths(ArrayList<ArrayList<Node>> listPaths) { // Add multiple paths to grid
         this.timerPathNodeRefresh = new Thread(() -> {
             for (ArrayList<Node> path : listPaths) {
                 for (Node pathNode : path) { // Loop through path to add to grid
@@ -153,10 +151,7 @@ public class Board extends MouseAdapter implements ActionListener {
                 }
             }
 
-            // Reset variables after pathfinding complete
-            this.pathfindingOngoing = false;
-            this.pathfindingPaused = false;
-            this.butStartSearch.setText("Start pathfinding");
+            resetPathfinding(); // Reset variables after pathfinding complete
         });
         this.timerPathNodeRefresh.start();
     }
@@ -169,16 +164,14 @@ public class Board extends MouseAdapter implements ActionListener {
             resetCurrentGrid(); // Clear pathfinding nodes
             disableDrawing(false); // Enable drawing
 
-            this.pathfindingOngoing = false;
-            this.pathfindingPaused = false;
+            resetPathfinding(); // Reset variables after pathfinding complete
         } else if (evt.getSource() == this.butClearGrid) {
             if (JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the grid?", "Warning",
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { // Confirm clear grid dialog. Yes option.
                 generateNewGrid(gridWidth); // Regenerate grid
                 disableDrawing(false); // Enable drawing
 
-                this.pathfindingOngoing = false;
-                this.pathfindingPaused = false;
+                resetPathfinding(); // Reset variables after pathfinding complete
             } else { // No option
             }
         } else if (evt.getSource() == this.butStartSearch) { // Start pathfinding TODO: finish methods
@@ -199,17 +192,40 @@ public class Board extends MouseAdapter implements ActionListener {
                 this.butStartSearch.setText("Pause pathfinding");
 
                 Pathfinder pathfinder = new Pathfinder(this.grid, this.startNode, this.endNode);
+                ArrayList<Node> searchPath, shortestPath;
 
                 if (this.rbBFS.isSelected()) { // Breadth-first search
-                    connectPathMultiple(pathfinder.bfs());
+                    searchPath = pathfinder.bfs();
+                    shortestPath = pathfinder.getShortestPath();
+
+                    if (shortestPath != null) { // Reached end node
+                        connectMultiplePaths(new ArrayList<>(
+                                Arrays.asList(searchPath, shortestPath))
+                        );
+                    } else { // Didn't reach end node
+                        connectPath(searchPath);
+                    }
                 } else if (this.rbDFS.isSelected()) { // Depth-first search
-                    connectPath(pathfinder.dfs());
+                    searchPath = pathfinder.dfs();
+                    shortestPath = pathfinder.getShortestPath(); // TODO: fix setting parents in DFS
+
+                    if (shortestPath != null) { // Reached end node
+                        connectMultiplePaths(new ArrayList<>(
+                                Arrays.asList(searchPath, shortestPath))
+                        );
+                    } else { // Didn't reach end node
+                        connectPath(searchPath);
+                    }
                 } else if (this.rbAStar.isSelected()) { // A* search algorithm
                 } else if (this.rbDijkstra.isSelected()) { // Dijkstra's algorithm
                 }
-
             }
         }
+    }
+    public void resetPathfinding() { // Reset pathfinding variables
+        this.pathfindingOngoing = false;
+        this.pathfindingPaused = false;
+        this.butStartSearch.setText("Start pathfinding");
     }
     public void mousePressed(MouseEvent evt) {
         mouseDrawing(evt);

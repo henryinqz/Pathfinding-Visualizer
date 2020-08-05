@@ -2,15 +2,30 @@ import java.util.*;
 
 public class Pathfinder {
     // PROPERTIES
-    private ArrayList<Node> open_list, closed_list, searchPath, shortPath;
+    private ArrayList<Node> open_list, closed_list, path;
     private Node[][] grid;
     private Node startNode, endNode, currentNode;
 
     // METHODS
-    // Breadth-first serach
-    public ArrayList<ArrayList<Node>> bfs() {
-        this.searchPath = new ArrayList<>();
-        this.shortPath = new ArrayList<>();
+    // Get shortest path
+    public ArrayList<Node> getShortestPath() {
+        if (this.grid == null || !this.grid[endNode.getY()][endNode.getX()].isVisited()) { // Didn't reach end path
+            return null;
+        } else {
+            ArrayList<Node> shortestPath = new ArrayList<>();
+            Node pathNode = this.grid[endNode.getY()][endNode.getX()]; // Get shortest path
+            while (pathNode.getParent() != null) {
+                pathNode = pathNode.getParent();
+                shortestPath.add(pathNode);
+            }
+            Collections.reverse(shortestPath);
+            return shortestPath;
+        }
+    }
+
+    // Breadth-first search
+    public ArrayList<Node> bfs() {
+        this.path = new ArrayList<>();
         Queue<Node> queue = new LinkedList<Node>();
 
         // BFS
@@ -19,14 +34,6 @@ public class Pathfinder {
         while (!queue.isEmpty()) {
             if (this.grid[endNode.getY()][endNode.getX()].isVisited()) { // Exit method if endNode has been found
                 System.out.println("BFS: End found; breaking");
-
-                Node pathNode = this.grid[endNode.getY()][endNode.getX()]; // Get shortest path
-                while (pathNode.getParent() != null) {
-                    pathNode = pathNode.getParent();
-                    this.shortPath.add(pathNode);
-                }
-                Collections.reverse(this.shortPath);
-
                 break;
             }
 
@@ -37,12 +44,12 @@ public class Pathfinder {
                     neighbor.setVisited(true);
 
                     neighbor.setParent(temp);
-                    this.searchPath.add(this.grid[neighbor.getY()][neighbor.getX()]);
+                    this.path.add(this.grid[neighbor.getY()][neighbor.getX()]);
                 }
             }
         }
 
-        return new ArrayList<>(Arrays.asList(this.searchPath, this.shortPath));
+        return this.path;
     }
     private ArrayList<Node> getNeighbors(Node node) {
         ArrayList<Node> neighbors = new ArrayList<>();
@@ -67,12 +74,15 @@ public class Pathfinder {
 
     // Depth-first search
     public ArrayList<Node> dfs() {
-        this.searchPath = new ArrayList();
-        dfsRecursive(this.startNode.getX(), this.startNode.getY());
+        this.path = new ArrayList();
 
-        return this.searchPath;
+//        dfsRecursive(this.startNode.getX(), this.startNode.getY());
+        dfsRecursive(this.startNode, null);
+        return this.path;
     }
-    private void dfsRecursive(int currentX, int currentY) {
+    private void dfsRecursive(Node currentNode, Node parentNode) {
+        int currentX = currentNode.getX();
+        int currentY = currentNode.getY();
         if (this.grid[endNode.getY()][endNode.getX()].isVisited()) { // Exit method if endNode has been found
             System.out.println("DFS: End found; returning");
             return;
@@ -81,13 +91,45 @@ public class Pathfinder {
         }
 
         this.grid[currentY][currentX].setVisited(true);
-        this.searchPath.add(this.grid[currentY][currentX]);
+        this.path.add(this.grid[currentY][currentX]);
+        if (parentNode != null) {
+            currentNode.setParent(parentNode);
+        }
 
-        dfsRecursive(currentX, currentY - 1); // Up
-        dfsRecursive(currentX + 1, currentY); // Right
-        dfsRecursive(currentX, currentY + 1); // Down
-        dfsRecursive(currentX - 1, currentY); // Left
+        try { // Up
+            dfsRecursive(this.grid[currentY-1][currentX], currentNode); // DFS to upper node
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
+        try { // Right
+            dfsRecursive(this.grid[currentY][currentX+1], currentNode); // DFS to right node
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
+        try { // Down
+            dfsRecursive(this.grid[currentY+1][currentX], currentNode); // DFS to lower node
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
+        try { // Left
+            dfsRecursive(this.grid[currentY][currentX-1], currentNode); // DFS to left node
+        } catch (ArrayIndexOutOfBoundsException e) {
+        }
     }
+//    private void dfsRecursive(int currentX, int currentY) {
+//        if (this.grid[endNode.getY()][endNode.getX()].isVisited()) { // Exit method if endNode has been found
+//            System.out.println("DFS: End found; returning");
+//            return;
+//        } else if (currentY < 0 || currentY >= this.grid.length || currentX < 0 || currentX >= this.grid[currentY].length || this.grid[currentY][currentX].isBarrier() || this.grid[currentY][currentX].isVisited()) { // Exit method if out of bounds or on closed node(?)
+//            return;
+//        }
+//
+//        this.grid[currentY][currentX].setVisited(true);
+//        this.path.add(this.grid[currentY][currentX]);
+//
+//        this.grid[currentY-1][currentX].setParent(this.grid[currentY][currentX]);
+//        dfsRecursive(currentX, currentY - 1); // Up
+//        dfsRecursive(currentX + 1, currentY); // Right
+//        dfsRecursive(currentX, currentY + 1); // Down
+//        dfsRecursive(currentX - 1, currentY); // Left
+//    }
 
     /*public void astar(int[][] maze, Node start, Node end) {
         // Create start & end nodes
