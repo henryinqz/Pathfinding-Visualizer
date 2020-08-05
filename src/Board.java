@@ -27,8 +27,9 @@ public class Board extends MouseAdapter implements ActionListener {
     private JRadioButton rbDFS = new JRadioButton("Depth-first search");
     private JRadioButton rbAStar = new JRadioButton("A* search algorithm");
     private JRadioButton rbDijkstra = new JRadioButton("Dijkstra's algorithm");
-    private JButton butStartSearch = new JButton("Start pathfinding");
 
+    private JButton butStartSearch = new JButton("Start pathfinding");
+    private boolean disableAlgoSelect = false;
     private boolean pathfindingOngoing = false;
     private boolean pathfindingPaused = false;
 
@@ -111,14 +112,15 @@ public class Board extends MouseAdapter implements ActionListener {
     public void connectPath(ArrayList<Node> path) { // Add path to grid
         this.timerPathNodeRefresh = new Thread(() -> {
             for (Node pathNode : path) { // Loop through path to add to grid
-                while (this.pathfindingPaused == true) { } // Loop to pause pathfinding
-
                 if (!pathNode.isStart() && !pathNode.isEnd()) { // Ignore start/end node to prevent drawing over
                     pathNode.setSearched();
                     try {
                         Thread.sleep(this.refreshInterval); // Delay before next path node is added to grid
                     } catch(InterruptedException e) {
                         e.printStackTrace();
+                    }
+                    while (this.pathfindingPaused == true) { // Loop to pause pathfinding TODO: remove sout since empty while loop doesn't run
+                        System.out.println("Pausing");
                     }
                 }
             }
@@ -127,22 +129,23 @@ public class Board extends MouseAdapter implements ActionListener {
             }
 
             resetPathfinding(); // Reset variables after pathfinding complete
+            disableAlgorithmSelect(false);
         });
         this.timerPathNodeRefresh.start();
     }
-    public void connectMultiplePaths(ArrayList<ArrayList<Node>> listPaths) { // Add multiple paths to grid
+    public synchronized void connectMultiplePaths(ArrayList<ArrayList<Node>> listPaths) { // Add multiple paths to grid
         this.timerPathNodeRefresh = new Thread(() -> {
             for (ArrayList<Node> path : listPaths) {
                 for (Node pathNode : path) { // Loop through path to add to grid
-                    while (this.pathfindingPaused == true) {
-                    } // Loop to pause pathfinding
-
                     if (!pathNode.isStart() && !pathNode.isEnd()) { // Ignore start/end node to prevent drawing over
                         pathNode.setSearched();
                         try {
                             Thread.sleep(this.refreshInterval); // Delay before next path node is added to grid
                         } catch (InterruptedException e) {
                             e.printStackTrace();
+                        }
+                        while (this.pathfindingPaused == true) { // Loop to pause pathfinding TODO: remove sout since empty while loop doesn't run
+                            System.out.println("Pausing");
                         }
                     }
                 }
@@ -152,6 +155,7 @@ public class Board extends MouseAdapter implements ActionListener {
             }
 
             resetPathfinding(); // Reset variables after pathfinding complete
+            disableAlgorithmSelect(false);
         });
         this.timerPathNodeRefresh.start();
     }
@@ -163,6 +167,7 @@ public class Board extends MouseAdapter implements ActionListener {
         } else if (evt.getSource() == this.butResetGrid) {
             resetCurrentGrid(); // Clear pathfinding nodes
             disableDrawing(false); // Enable drawing
+            disableAlgorithmSelect(false); // Enable algorithm selection
 
             resetPathfinding(); // Reset variables after pathfinding complete
         } else if (evt.getSource() == this.butClearGrid) {
@@ -170,12 +175,14 @@ public class Board extends MouseAdapter implements ActionListener {
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { // Confirm clear grid dialog. Yes option.
                 generateNewGrid(gridWidth); // Regenerate grid
                 disableDrawing(false); // Enable drawing
+                disableAlgorithmSelect(false); // Enable algorithm selection
 
                 resetPathfinding(); // Reset variables after pathfinding complete
             } else { // No option
             }
         } else if (evt.getSource() == this.butStartSearch) { // Start pathfinding TODO: finish methods
             disableDrawing(true); // Prevent drawing during pathfinding
+            disableAlgorithmSelect(true); // Prevent changing algorithm during pathfinding
 
             if (this.pathfindingOngoing == true) { // Pathfinding is ongoing
                 if (this.pathfindingPaused == true) { // Pathfinding is currently paused and will be resumed
@@ -222,11 +229,7 @@ public class Board extends MouseAdapter implements ActionListener {
             }
         }
     }
-    public void resetPathfinding() { // Reset pathfinding variables
-        this.pathfindingOngoing = false;
-        this.pathfindingPaused = false;
-        this.butStartSearch.setText("Start pathfinding");
-    }
+
     public void mousePressed(MouseEvent evt) {
         mouseDrawing(evt);
     }
@@ -259,6 +262,25 @@ public class Board extends MouseAdapter implements ActionListener {
                     this.grid[gridY][gridX].setEmpty();
                 }
             }
+        }
+    }
+    public void resetPathfinding() { // Reset pathfinding variables
+        this.pathfindingOngoing = false;
+        this.pathfindingPaused = false;
+        this.butStartSearch.setText("Start pathfinding");
+    }
+    public void disableAlgorithmSelect(boolean disableAlgoSelect) {
+        this.disableAlgoSelect = disableAlgoSelect;
+        if (this.disableAlgoSelect == true) { // Algorithm select has been disabled; prevent changes to pathfinding radio buttons
+            this.rbBFS.setEnabled(false);
+            this.rbDFS.setEnabled(false);
+            this.rbAStar.setEnabled(false);
+            this.rbDijkstra.setEnabled(false);
+        } else { // Algorithm select has been enabled; allow changes to pathfinding radio buttons
+            this.rbBFS.setEnabled(true);
+            this.rbDFS.setEnabled(true);
+            this.rbAStar.setEnabled(true);
+            this.rbDijkstra.setEnabled(true);
         }
     }
     public void disableDrawing(boolean disableDraw) {
