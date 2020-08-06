@@ -1,16 +1,19 @@
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Hashtable;
 
-public class Board extends MouseAdapter implements ActionListener {
+public class Board extends MouseAdapter implements ActionListener, ChangeListener {
     // PROPERTIES
     private BoardPanel boardPanel = new BoardPanel(); // Create new boardPanel JPanel object
 
     // Grid
     public static Node[][] grid;
-    public static int gridWidth, nodeSideLength;
+    public static int gridWidth = 25, nodeSideLength;
     private Node startNode, endNode;
 
     // Draw tools
@@ -33,8 +36,14 @@ public class Board extends MouseAdapter implements ActionListener {
     private boolean pathfindingOngoing = false;
     private boolean pathfindingPaused = false;
 
+    // Grid size slider
+    private JSlider sliderGridWidth = new JSlider(10, 40, this.gridWidth);
+
+    // Path node refresh slider
     private Thread timerPathNodeRefresh;
-    private int refreshInterval = 10; // Used for connect path thread to adjust refresh interval for adding pathfinding nodes TODO: add speed toggle
+    private int refreshInterval = 20; // Used for connect path thread to adjust refresh interval for adding pathfinding nodes
+    private JSlider sliderPathRefreshInterval = new JSlider(5, 35, refreshInterval);
+
 
     private Timer timerBoard = new Timer(1000 / 60, this); // 60FPS Timer
 
@@ -93,8 +102,10 @@ public class Board extends MouseAdapter implements ActionListener {
     }
     public void resetCurrentGrid() { // Clear pathfinding nodes (exclude start, end, & barrier nodes)
         if (this.grid != null) {
-            for (int y = 0; y < this.gridWidth; y++) { // Load Node grid/array
-                for (int x = 0; x < this.gridWidth; x++) {
+//            for (int y = 0; y < this.gridWidth; y++) { // Load Node grid/array
+//                for (int x = 0; x < this.gridWidth; x++){
+            for (int y = 0; y < this.grid.length; y++) { // Load Node grid/array
+                for (int x = 0; x < this.grid[y].length; x++) {
                     if (this.grid[y][x].isStart()) {
                         this.grid[y][x] = new Node(x,y, Node.START_NODE);
                     } else if (this.grid[y][x].isEnd()) {
@@ -133,7 +144,7 @@ public class Board extends MouseAdapter implements ActionListener {
         });
         this.timerPathNodeRefresh.start();
     }
-    public synchronized void connectMultiplePaths(ArrayList<ArrayList<Node>> listPaths) { // Add multiple paths to grid
+    public void connectMultiplePaths(ArrayList<ArrayList<Node>> listPaths) { // Add multiple paths to grid
         this.timerPathNodeRefresh = new Thread(() -> {
             for (ArrayList<Node> path : listPaths) {
                 for (Node pathNode : path) { // Loop through path to add to grid
@@ -160,7 +171,8 @@ public class Board extends MouseAdapter implements ActionListener {
         this.timerPathNodeRefresh.start();
     }
 
-    // Listener methods (ActionListener, MouseListener/MouseMotionListener/MouseAdapter)
+    // Listener methods
+    // ActionListener
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == this.timerBoard) { // 60FPS Timer
             this.boardPanel.repaint();
@@ -229,7 +241,24 @@ public class Board extends MouseAdapter implements ActionListener {
             }
         }
     }
+    public void resetPathfinding() { // Reset pathfinding variables
+        this.pathfindingOngoing = false;
+        this.pathfindingPaused = false;
+        this.butStartSearch.setText("Start pathfinding");
+    }
 
+    // ChangeListener
+    public void stateChanged(ChangeEvent evt) {
+        if (evt.getSource() == this.sliderGridWidth) {
+            this.gridWidth = this.sliderGridWidth.getValue();
+            generateNewGrid(this.gridWidth);
+            System.out.println("Grid width: " + this.gridWidth);
+        } else if (evt.getSource() == this.sliderPathRefreshInterval) {
+            this.refreshInterval = this.sliderPathRefreshInterval.getValue();
+        }
+    }
+
+    // MouseAdapter (MouseListener/MouseMotionListener)
     public void mousePressed(MouseEvent evt) {
         mouseDrawing(evt);
     }
@@ -263,11 +292,6 @@ public class Board extends MouseAdapter implements ActionListener {
                 }
             }
         }
-    }
-    public void resetPathfinding() { // Reset pathfinding variables
-        this.pathfindingOngoing = false;
-        this.pathfindingPaused = false;
-        this.butStartSearch.setText("Start pathfinding");
     }
     public void disableAlgorithmSelect(boolean disableAlgoSelect) {
         this.disableAlgoSelect = disableAlgoSelect;
@@ -372,12 +396,38 @@ public class Board extends MouseAdapter implements ActionListener {
         algoTypes.add(this.rbAStar);
         algoTypes.add(this.rbDijkstra);
 
-        // Generate node grid
-        generateNewGrid(25); // TODO: limit range from 8-40; default 25
+        // Grid width slider
+        this.boardPanel.add(this.sliderGridWidth);
+        this.sliderGridWidth.setBounds(20,450,150,70);
+        this.sliderGridWidth.setPaintLabels(true);
+        this.sliderGridWidth.setPaintTicks(true);
+        this.sliderGridWidth.setMajorTickSpacing(10);
+        this.sliderGridWidth.setMinorTickSpacing(5);
+        this.sliderGridWidth.setFocusable(false);
+        this.sliderGridWidth.addChangeListener(this);
+        generateNewGrid(this.sliderGridWidth.getValue()); // Generate node grid
 
-        this.timerBoard.start(); // 60FPS timer
+        // Path node refresh slider
+        this.boardPanel.add(this.sliderPathRefreshInterval);
+        this.sliderPathRefreshInterval.setBounds(20,550,150,70);
+        this.sliderPathRefreshInterval.setPaintLabels(true);
+        this.sliderPathRefreshInterval.setPaintTicks(true);
+        this.sliderPathRefreshInterval.setMajorTickSpacing(15);
+        this.sliderPathRefreshInterval.setMinorTickSpacing(5);
+        this.sliderPathRefreshInterval.setSnapToTicks(true);
+        this.sliderPathRefreshInterval.setInverted(true);
+        this.sliderPathRefreshInterval.setFocusable(false);
+        this.sliderPathRefreshInterval.addChangeListener(this);
+
+        Hashtable<Integer, JLabel> tablePathRefreshInterval = new Hashtable<>();
+        tablePathRefreshInterval.put(this.sliderPathRefreshInterval.getMinimum(), new JLabel("Fast"));
+        tablePathRefreshInterval.put((this.sliderPathRefreshInterval.getMaximum()+this.sliderPathRefreshInterval.getMinimum())/2, new JLabel("Medium"));
+        tablePathRefreshInterval.put(this.sliderPathRefreshInterval.getMaximum(), new JLabel("Slow"));
+        this.sliderPathRefreshInterval.setLabelTable(tablePathRefreshInterval);
+
+
+        this.timerBoard.start(); // 60FPS repaint timer
     }
-
 } class BoardPanel extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
