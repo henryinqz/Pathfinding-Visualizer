@@ -313,10 +313,14 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
             this.rbStartNode.setEnabled(false);
             this.rbEndNode.setEnabled(false);
             this.rbBarrierNode.setEnabled(false);
+
+            this.sliderGridWidth.setEnabled(false);
         } else { // Drawing has been enabled; allow changes to draw tool radio buttons
             this.rbStartNode.setEnabled(true);
             this.rbEndNode.setEnabled(true);
             this.rbBarrierNode.setEnabled(true);
+
+            this.sliderGridWidth.setEnabled(true);
         }
     }
 
@@ -347,13 +351,24 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         this.boardPanel.add(this.labelErase);
         this.labelErase.setBounds(20,100+(20*3),150,20);
 
+        // Grid width slider
+        this.boardPanel.add(this.sliderGridWidth);
+        this.sliderGridWidth.setBounds(20,100+(20*4),150,50);
+        this.sliderGridWidth.setPaintLabels(true);
+        this.sliderGridWidth.setPaintTicks(true);
+        this.sliderGridWidth.setMajorTickSpacing(10);
+        this.sliderGridWidth.setMinorTickSpacing(5);
+        this.sliderGridWidth.setFocusable(false);
+        this.sliderGridWidth.addChangeListener(this);
+        generateNewGrid(this.sliderGridWidth.getValue()); // Generate node grid
+
         this.boardPanel.add(this.butResetGrid);
-        this.butResetGrid.setBounds(20,100+(20*5),150,40);
+        this.butResetGrid.setBounds(20,100+(20*7),150,40);
         this.butResetGrid.setFocusable(false);
         this.butResetGrid.addActionListener(this);
 
         this.boardPanel.add(this.butClearGrid);
-        this.butClearGrid.setBounds(20,100+(20*7),150,40);
+        this.butClearGrid.setBounds(20,100+(20*9),150,40);
         this.butClearGrid.setFocusable(false);
         this.butClearGrid.addActionListener(this);
 
@@ -364,31 +379,24 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
 
         // Algorithm type radio buttons
         this.boardPanel.add(this.rbBFS);
-        this.rbBFS.setBounds(20,300,200,20);
+        this.rbBFS.setBounds(20,350,200,20);
         this.rbBFS.setFocusable(false);
         this.rbBFS.addActionListener(this);
 
         this.boardPanel.add(this.rbDFS);
-        this.rbDFS.setBounds(20,300+(20),200,20);
+        this.rbDFS.setBounds(20,350+(20),200,20);
         this.rbDFS.setFocusable(false);
         this.rbDFS.addActionListener(this);
 
         this.boardPanel.add(this.rbAStar);
-        this.rbAStar.setBounds(20,300+(20*2),200,20);
+        this.rbAStar.setBounds(20,350+(20*2),200,20);
         this.rbAStar.setFocusable(false);
         this.rbAStar.addActionListener(this);
 
         this.boardPanel.add(this.rbDijkstra);
-        this.rbDijkstra.setBounds(20,300+(20*3),200,20);
+        this.rbDijkstra.setBounds(20,350+(20*3),200,20);
         this.rbDijkstra.setFocusable(false);
         this.rbDijkstra.addActionListener(this);
-
-        this.boardPanel.add(this.butStartSearch);
-        this.butStartSearch.setBounds(20,300+(20*5),150,40);
-        this.butStartSearch.setFocusable(false);
-        this.butStartSearch.addActionListener(this);
-        this.butStartSearch.setEnabled(false); // Set to false until start/end nodes are created
-        //this.butStartSearch.setBackground(Color.GREEN);
 
         ButtonGroup algoTypes = new ButtonGroup(); // Only allows one draw tool radio button to be pressed at a time
         algoTypes.add(this.rbBFS);
@@ -396,20 +404,9 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         algoTypes.add(this.rbAStar);
         algoTypes.add(this.rbDijkstra);
 
-        // Grid width slider
-        this.boardPanel.add(this.sliderGridWidth);
-        this.sliderGridWidth.setBounds(20,450,150,70);
-        this.sliderGridWidth.setPaintLabels(true);
-        this.sliderGridWidth.setPaintTicks(true);
-        this.sliderGridWidth.setMajorTickSpacing(10);
-        this.sliderGridWidth.setMinorTickSpacing(5);
-        this.sliderGridWidth.setFocusable(false);
-        this.sliderGridWidth.addChangeListener(this);
-        generateNewGrid(this.sliderGridWidth.getValue()); // Generate node grid
-
         // Path node refresh slider
         this.boardPanel.add(this.sliderPathRefreshInterval);
-        this.sliderPathRefreshInterval.setBounds(20,550,150,70);
+        this.sliderPathRefreshInterval.setBounds(20,350+(20*4),150,50);
         this.sliderPathRefreshInterval.setPaintLabels(true);
         this.sliderPathRefreshInterval.setPaintTicks(true);
         this.sliderPathRefreshInterval.setMajorTickSpacing(15);
@@ -425,6 +422,12 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         tablePathRefreshInterval.put(this.sliderPathRefreshInterval.getMaximum(), new JLabel("Slow"));
         this.sliderPathRefreshInterval.setLabelTable(tablePathRefreshInterval);
 
+        this.boardPanel.add(this.butStartSearch);
+        this.butStartSearch.setBounds(20,350+(20*7),150,40);
+        this.butStartSearch.setFocusable(false);
+        this.butStartSearch.addActionListener(this);
+        this.butStartSearch.setEnabled(false); // Set to false until start/end nodes are created
+        //this.butStartSearch.setBackground(Color.GREEN);
 
         this.timerBoard.start(); // 60FPS repaint timer
     }
