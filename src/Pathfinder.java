@@ -11,6 +11,7 @@ public class Pathfinder {
         this.grid = grid;
         this.startNode = startNode;
         this.endNode = endNode;
+        this.currentNode = startNode;
     }
 
     // METHODS
