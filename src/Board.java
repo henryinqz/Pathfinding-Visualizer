@@ -82,6 +82,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     }
 
     public void generateNewGrid(int width) { // Generate a square grid
+        resetCurrentGrid(); // Resets boardPanel variables if grid already exists
         this.grid = new Node[width][width];
         for (int y=0; y < width; y++) { // Load Node grid/array
             for (int x=0; x < width; x++) {
@@ -94,8 +95,6 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
 
         setStartNode(null); // Reset start/end nodes
         setEndNode(null);
-
-        this.boardPanel.endNotFound(false);
     }
     public void resetCurrentGrid() { // Clear pathfinding nodes (exclude start, end, & barrier nodes)
         if (this.grid != null) {
@@ -114,6 +113,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
             }
         }
         this.boardPanel.endNotFound(false);
+        this.boardPanel.searchComplete(false);
     }
 
     public void connectPath(ArrayList<Node> path) { // Add path to grid
@@ -143,6 +143,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
 
             resetPathfinding(); // Reset variables after pathfinding complete
             disableAlgorithmSelect(false);
+            this.boardPanel.searchComplete(true);
         });
         this.threadPathNodeRefresh.start();
     }
@@ -182,6 +183,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
 
             resetPathfinding(); // Reset variables after pathfinding complete
             disableAlgorithmSelect(false);
+            this.boardPanel.searchComplete(true);
         });
         this.threadPathNodeRefresh.start();
     }
@@ -481,10 +483,30 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     }
 } class BoardPanel extends JPanel {
     private boolean endNotFound = false;
+    private boolean pathfindingComplete = false;
+    private int r=255,g=0,b=0;
 
-    public void paintComponent(Graphics g) {
-        Graphics2D g2 = (Graphics2D)g;
+    public void paintComponent(Graphics graphics) {
+        Graphics2D g2 = (Graphics2D)graphics;
         super.paintComponent(g2);
+
+        if (pathfindingComplete == true) { // Modified RGB Color fade algorithm from https://codepen.io/Codepixl/pen/ogWWaK/
+            int increment = 5;
+            for (int i=0; i<increment; i++) { // TODO: optimize algorithm to not use for loop. also limit range from 15-240?
+                if (r > 0 && b == 0) {
+                    r--;
+                    g++;
+                }
+                if (g > 0 && r == 0) {
+                    g--;
+                    b++;
+                }
+                if (b > 0 && g == 0) {
+                    r++;
+                    b--;
+                }
+            }
+        }
 
         drawNodes(g2, Board.grid, Board.nodeSideLength);
         drawGrid(g2, Board.grid, Board.nodeSideLength);
@@ -514,6 +536,9 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         for (int i=0; i<grid.length; i++) {
             for (int j=0; j<grid[i].length; j++) {
                 g2.setColor(grid[i][j].getColor());
+                if (this.pathfindingComplete && grid[i][j].isEmpty()) { // Color shift white empty nodes after pathfinding is done
+                    g2.setColor(new Color(r, g, b));
+                }
                 g2.fillRect(Main.MENU_WIDTH+(j*sideLength), i*sideLength, sideLength, sideLength); // Draw node
 
                 if (grid[i][j].isStart() || grid[i][j].isEnd()) { // Draw border around start/end nodes
@@ -522,12 +547,14 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                     g2.drawRect(Main.MENU_WIDTH+(j*sideLength)+1, (i*sideLength)+1, sideLength-1, sideLength-1); // Draw node
                     g2.setStroke(new BasicStroke(1));
                 }
-
             }
         }
         g2.setColor(Color.BLACK);
     }
     public void endNotFound(boolean endNodeNotFound) {
-        endNotFound = endNodeNotFound;
+        this.endNotFound = endNodeNotFound;
+    }
+    public void searchComplete(boolean pathfindingComplete) {
+        this.pathfindingComplete = pathfindingComplete;
     }
 }

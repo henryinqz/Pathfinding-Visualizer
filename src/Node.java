@@ -106,13 +106,11 @@ public class Node {
 
     // CONSTRUCTOR
     public Node(int x, int y) {
-        this.x = x;
-        this.y = y;
+        this.setPos(x,y);
         this.color = EMPTY_NODE; // Default node to empty
     }
     public Node(int x, int y, Color color) {
-        this.x = x;
-        this.y = y;
+        this.setPos(x,y);
         if (color == EMPTY_NODE || color == BARRIER_NODE || color == START_NODE || color == END_NODE || color == SEARCHED_NODE) { // Restrict node colours
             this.color = color;
         } else { // If node color is not empty/barrier/start/end, default to empty
