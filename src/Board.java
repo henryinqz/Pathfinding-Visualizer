@@ -484,27 +484,30 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
 } class BoardPanel extends JPanel {
     private boolean endNotFound = false;
     private boolean pathfindingComplete = false;
-    private int r=255,g=0,b=0;
+    private int rgbMax = 230, rgbMin = 15; // Limit color fade range
+    private int r=rgbMax, g=rgbMin, b=rgbMin;
 
     public void paintComponent(Graphics graphics) {
         Graphics2D g2 = (Graphics2D)graphics;
         super.paintComponent(g2);
 
         if (pathfindingComplete == true) { // Modified RGB Color fade algorithm from https://codepen.io/Codepixl/pen/ogWWaK/
-            int increment = 5;
-            for (int i=0; i<increment; i++) { // TODO: optimize algorithm to not use for loop. also limit range from 15-240?
-                if (r > 0 && b == 0) {
-                    r--;
-                    g++;
-                }
-                if (g > 0 && r == 0) {
-                    g--;
-                    b++;
-                }
-                if (b > 0 && g == 0) {
-                    r++;
-                    b--;
-                }
+            /*r = r<0 ? 0 : Math.min(r, this.rgbMax); // Out of bound checks
+            g = g<0 ? 0 : Math.min(g, this.rgbMax);
+            b = b<0 ? 0 : Math.min(b, this.rgbMax);*/
+
+            int increment = 2;
+            if (r > this.rgbMin && g <this.rgbMax && b <= this.rgbMin) {
+                r-=increment;
+                g+=increment;
+            }
+            if (g > this.rgbMin && b < this.rgbMax && r <= this.rgbMin) {
+                g-=increment;
+                b+=increment;
+            }
+            if (b > this.rgbMin && r < this.rgbMax && g <= this.rgbMin) {
+                r+=increment;
+                b-=increment;
             }
         }
 
