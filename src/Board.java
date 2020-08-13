@@ -483,40 +483,49 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     private boolean endNotFound = false;
 
     public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D)g;
+        super.paintComponent(g2);
 
-        drawNodes(g, Board.grid, Board.nodeSideLength);
-        drawGrid(g, Board.grid, Board.nodeSideLength);
+        drawNodes(g2, Board.grid, Board.nodeSideLength);
+        drawGrid(g2, Board.grid, Board.nodeSideLength);
 
         if (this.endNotFound == true) {
-            g.setColor(new Color(0,0,0,0.5f)); // Darken screen (Black w/ 50% opacity)
-            g.fillRect(Main.MENU_WIDTH,0, Main.FRAME_HEIGHT, Main.FRAME_HEIGHT);
+            g2.setColor(new Color(0,0,0,0.5f)); // Darken screen (Black w/ 50% opacity)
+            g2.fillRect(Main.MENU_WIDTH,0, Main.FRAME_HEIGHT, Main.FRAME_HEIGHT);
 
-            g.setColor(Color.ORANGE);
-            g.setFont(Main.loadFont("product_sans_bold",70));
+            g2.setColor(Color.ORANGE);
+            g2.setFont(Main.loadFont("product_sans_bold",70));
             String noPathFound = "NO PATH";
-            int stringWidth = g.getFontMetrics().stringWidth(noPathFound);
-            g.drawString(noPathFound, Main.MENU_WIDTH+(Main.FRAME_HEIGHT/2)-(stringWidth/2), (Main.FRAME_HEIGHT/2));
+            int stringWidth = g2.getFontMetrics().stringWidth(noPathFound);
+            g2.drawString(noPathFound, Main.MENU_WIDTH+(Main.FRAME_HEIGHT/2)-(stringWidth/2), (Main.FRAME_HEIGHT/2));
         }
 
     }
 
-    public void drawGrid(Graphics g, Node[][] grid, int sideLength) {
+    public void drawGrid(Graphics2D g2, Node[][] grid, int sideLength) {
         for (int i=0; i<=grid.length; i++) { // Horizontal grid lines
-            g.drawLine(Main.MENU_WIDTH,i*sideLength, Main.FRAME_WIDTH,i*sideLength);
+            g2.drawLine(Main.MENU_WIDTH,i*sideLength, Main.FRAME_WIDTH,i*sideLength);
         }
         for (int j=0; j<=grid[0].length; j++) { // Vertical grid lines
-           g.drawLine(Main.MENU_WIDTH+(j*sideLength), 0, Main.MENU_WIDTH+(j*sideLength), Main.FRAME_HEIGHT);
+           g2.drawLine(Main.MENU_WIDTH+(j*sideLength), 0, Main.MENU_WIDTH+(j*sideLength), Main.FRAME_HEIGHT);
         }
     }
-    public void drawNodes(Graphics g, Node[][] grid, int sideLength) {
+    public void drawNodes(Graphics2D g2, Node[][] grid, int sideLength) {
         for (int i=0; i<grid.length; i++) {
             for (int j=0; j<grid[i].length; j++) {
-                g.setColor(grid[i][j].getColor());
-                g.fillRect(Main.MENU_WIDTH+(j*sideLength), i*sideLength, sideLength, sideLength); // Draw node
+                g2.setColor(grid[i][j].getColor());
+                g2.fillRect(Main.MENU_WIDTH+(j*sideLength), i*sideLength, sideLength, sideLength); // Draw node
+
+                if (grid[i][j].isStart() || grid[i][j].isEnd()) { // Draw border around start/end nodes
+                    g2.setStroke(new BasicStroke(2));
+                    g2.setColor(Color.BLACK);
+                    g2.drawRect(Main.MENU_WIDTH+(j*sideLength)+1, (i*sideLength)+1, sideLength-1, sideLength-1); // Draw node
+                    g2.setStroke(new BasicStroke(1));
+                }
+
             }
         }
-        g.setColor(Color.BLACK);
+        g2.setColor(Color.BLACK);
     }
     public void endNotFound(boolean endNodeNotFound) {
         endNotFound = endNodeNotFound;

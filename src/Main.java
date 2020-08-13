@@ -27,8 +27,8 @@ public class Main {
         return font;
     }
 
-
-    public static void main(String[] args) { // Main method
+    // MAIN METHOD
+    public static void main(String[] args) {
         try {
             //UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName()); // Fixes Mac devices showing native JComponent styles (and making text not visible)
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

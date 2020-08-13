@@ -59,7 +59,7 @@ public class Node {
         return this.color == END_NODE;
     }
     public boolean isSearched() {
-        return this.color == SEARCHED_NODE;
+        return this.color == SEARCHED_NODE || this.color == SEARCHED_NODE_2;
     }
     public boolean isVisited() {
         return this.visited;
