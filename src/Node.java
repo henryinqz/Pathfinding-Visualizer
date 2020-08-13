@@ -10,8 +10,8 @@ public class Node {
     public static final Color EMPTY_NODE = Color.WHITE,
             BARRIER_NODE = Color.BLACK,
             START_NODE = Color.GREEN,
-            END_NODE = Color.RED,
-            SEARCHED_NODE = new Color(0,200,255),
+            END_NODE = Color.RED;
+    public static Color SEARCHED_NODE = new Color(0,200,255),
             SEARCHED_NODE_2 = new Color(255, 215, 0);
     private boolean visited = false;
 

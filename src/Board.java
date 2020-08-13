@@ -4,7 +4,6 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Hashtable;
 
 public class Board extends MouseAdapter implements ActionListener, ChangeListener {
@@ -95,6 +94,8 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
 
         setStartNode(null); // Reset start/end nodes
         setEndNode(null);
+
+        this.boardPanel.endNotFound(false);
     }
     public void resetCurrentGrid() { // Clear pathfinding nodes (exclude start, end, & barrier nodes)
         if (this.grid != null) {
@@ -112,6 +113,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                 }
             }
         }
+        this.boardPanel.endNotFound(false);
     }
 
     public void connectPath(ArrayList<Node> path) { // Add path to grid
@@ -129,7 +131,14 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                     }
                 }
             }
-            if (!path.contains(endNode)) { // TODO: Handle end node not found
+
+            if (!path.contains(endNode)) {
+                try {
+                    Thread.sleep(this.refreshInterval); // Delay
+                } catch(InterruptedException e) {
+                    e.printStackTrace();
+                }
+                boardPanel.endNotFound(true);
             }
 
             resetPathfinding(); // Reset variables after pathfinding complete
@@ -192,7 +201,13 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                         }
                     }
                 }
-                if (!path.contains(endNode)) { // TODO: Handle end node not found
+                if (!path.contains(endNode)) {
+                    try {
+                        Thread.sleep(this.refreshInterval); // Delay
+                    } catch(InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    boardPanel.endNotFound(true);
                 }
             }
 
@@ -465,11 +480,25 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         this.timerBoard.start(); // 60FPS repaint timer
     }
 } class BoardPanel extends JPanel {
+    private boolean endNotFound = false;
+
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
         drawNodes(g, Board.grid, Board.nodeSideLength);
         drawGrid(g, Board.grid, Board.nodeSideLength);
+
+        if (this.endNotFound == true) {
+            g.setColor(new Color(0,0,0,0.5f)); // Darken screen (Black w/ 50% opacity)
+            g.fillRect(Main.MENU_WIDTH,0, Main.FRAME_HEIGHT, Main.FRAME_HEIGHT);
+
+            g.setColor(Color.ORANGE);
+            g.setFont(Main.loadFont("product_sans_bold",70));
+            String noPathFound = "NO PATH";
+            int stringWidth = g.getFontMetrics().stringWidth(noPathFound);
+            g.drawString(noPathFound, Main.MENU_WIDTH+(Main.FRAME_HEIGHT/2)-(stringWidth/2), (Main.FRAME_HEIGHT/2));
+        }
+
     }
 
     public void drawGrid(Graphics g, Node[][] grid, int sideLength) {
@@ -488,5 +517,8 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
             }
         }
         g.setColor(Color.BLACK);
+    }
+    public void endNotFound(boolean endNodeNotFound) {
+        endNotFound = endNodeNotFound;
     }
 }

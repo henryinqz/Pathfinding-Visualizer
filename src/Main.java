@@ -1,4 +1,6 @@
 import javax.swing.*;
+import java.awt.Font;
+import java.io.File;
 
 public class Main {
     // PROPERTIES
@@ -15,6 +17,16 @@ public class Main {
         frame.setResizable(false); // Disable resizing frame/window
         frame.setVisible(true); // Set visible
     }
+    public static Font loadFont(String fontName, int fontSize) {
+        Font font = null; // initialize font object
+        try {
+            font = Font.createFont(Font.PLAIN, new File("assets/font/" + fontName + ".ttf")).deriveFont(Font.PLAIN, fontSize);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return font;
+    }
+
 
     public static void main(String[] args) { // Main method
         try {

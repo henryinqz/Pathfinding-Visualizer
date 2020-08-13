@@ -56,7 +56,7 @@ public class Pathfinder {
     // BREADTH-FIRST SEARCH
     public ArrayList<Node> bfs() {
         this.path = new ArrayList<>();
-        Queue<Node> queue = new LinkedList<Node>();
+        Queue<Node> queue = new LinkedList<>();
 
         // BFS algorithm
         queue.add(this.startNode);
@@ -140,11 +140,10 @@ public class Pathfinder {
     }*/
 
     // A* SEARCH ALGORITHM
-    public ArrayList<Node> astar() {
+    public ArrayList<Node> astar() { // TODO: Count/track order of parents to be shortest
         this.path = new ArrayList();
 
-        // Initialize F/G/H costs of nodes
-        for (int i=0; i<this.grid.length; i++) {
+        for (int i=0; i<this.grid.length; i++) { // Initialize G/H/F costs of nodes
             for (int j=0; j<this.grid[i].length; j++) {
                 this.grid[i][j].setG(Integer.MAX_VALUE);
                 this.grid[i][j].setF(Integer.MAX_VALUE);
@@ -153,9 +152,9 @@ public class Pathfinder {
         this.startNode.setG(0);
         this.startNode.setH(getHeuristic(this.startNode, this.endNode));
         this.startNode.setF(this.startNode.getG() + this.startNode.getH());
-//        this.endNode.setG(0);
-//        this.endNode.setH(0);
-//        this.endNode.setF(0);
+        /*this.endNode.setG(0);
+        this.endNode.setH(0);
+        this.endNode.setF(0);*/
 
         ArrayList<Node> openList = new ArrayList<>(); // Initialize ArrayLists of open & closed nodes
         ArrayList<Node> closedList = new ArrayList<>();
