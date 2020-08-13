@@ -14,6 +14,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     // Grid
     public static Node[][] grid;
     public static int gridWidth = 25, nodeSideLength;
+    private JSlider sliderGridWidth = new JSlider(10, 40, this.gridWidth); // Grid size slider
     private Node startNode, endNode;
 
     // Draw tools
@@ -36,17 +37,12 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     private boolean pathfindingOngoing = false;
     private boolean pathfindingPaused = false;
 
-    // Grid size slider
-    private JSlider sliderGridWidth = new JSlider(10, 40, this.gridWidth);
-
     // Path node refresh slider
-    private Thread timerPathNodeRefresh;
-    private int refreshInterval = 20; // Used for connect path thread to adjust refresh interval for adding pathfinding nodes
+    private Thread threadPathNodeRefresh;
+    private int refreshInterval = 15; // Used for connect path thread to adjust refresh interval for adding pathfinding nodes
     private JSlider sliderPathRefreshInterval = new JSlider(5, 35, refreshInterval);
 
-
     private Timer timerBoard = new Timer(1000 / 60, this); // 60FPS Timer
-
 
     // METHODS
     public JPanel getPanel() { // Return current panel
@@ -102,8 +98,6 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     }
     public void resetCurrentGrid() { // Clear pathfinding nodes (exclude start, end, & barrier nodes)
         if (this.grid != null) {
-//            for (int y = 0; y < this.gridWidth; y++) { // Load Node grid/array
-//                for (int x = 0; x < this.gridWidth; x++){
             for (int y = 0; y < this.grid.length; y++) { // Load Node grid/array
                 for (int x = 0; x < this.grid[y].length; x++) {
                     if (this.grid[y][x].isStart()) {
@@ -121,10 +115,10 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     }
 
     public void connectPath(ArrayList<Node> path) { // Add path to grid
-        this.timerPathNodeRefresh = new Thread(() -> {
+        this.threadPathNodeRefresh = new Thread(() -> {
             for (Node pathNode : path) { // Loop through path to add to grid
                 if (!pathNode.isStart() && !pathNode.isEnd()) { // Ignore start/end node to prevent drawing over
-                    pathNode.setSearched();
+                    pathNode.setSearched(false);
                     try {
                         Thread.sleep(this.refreshInterval); // Delay before next path node is added to grid
                     } catch(InterruptedException e) {
@@ -136,16 +130,54 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                 }
             }
             if (!path.contains(endNode)) { // TODO: Handle end node not found
-
             }
 
             resetPathfinding(); // Reset variables after pathfinding complete
             disableAlgorithmSelect(false);
         });
-        this.timerPathNodeRefresh.start();
+        this.threadPathNodeRefresh.start();
     }
-    public void connectMultiplePaths(ArrayList<ArrayList<Node>> listPaths) { // Add multiple paths to grid
-        this.timerPathNodeRefresh = new Thread(() -> {
+    public void connectPath(ArrayList<Node> searchPath, ArrayList<Node> shortestPath) { // Add multiple paths to grid
+        this.threadPathNodeRefresh = new Thread(() -> {
+            if (searchPath != null) {
+                for (Node pathNode : searchPath) { // Loop through path to add to grid
+                    if (!pathNode.isStart() && !pathNode.isEnd()) { // Ignore start/end node to prevent drawing over
+                        pathNode.setSearched(false);
+                        try {
+                            Thread.sleep(this.refreshInterval); // Delay before next path node is added to grid
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        while (this.pathfindingPaused == true) { // Loop to pause pathfinding TODO: remove sout since empty while loop doesn't run
+                            System.out.println("Pausing");
+                        }
+                    }
+                }
+            }
+
+            if (shortestPath != null) {
+                for (Node pathNode : shortestPath) { // Loop through path to add to grid
+                    if (!pathNode.isStart() && !pathNode.isEnd()) { // Ignore start/end node to prevent drawing over
+                        pathNode.setSearched(true);
+                        try {
+                            Thread.sleep(this.refreshInterval); // Delay before next path node is added to grid
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        while (this.pathfindingPaused == true) { // Loop to pause pathfinding TODO: remove sout since empty while loop doesn't run
+                            System.out.println("Pausing");
+                        }
+                    }
+                }
+            }
+
+            resetPathfinding(); // Reset variables after pathfinding complete
+            disableAlgorithmSelect(false);
+        });
+        this.threadPathNodeRefresh.start();
+    }
+    /*public void connectMultiplePaths(ArrayList<ArrayList<Node>> listPaths) { // Add multiple paths to grid
+        this.threadPathNodeRefresh = new Thread(() -> {
             for (ArrayList<Node> path : listPaths) {
                 for (Node pathNode : path) { // Loop through path to add to grid
                     if (!pathNode.isStart() && !pathNode.isEnd()) { // Ignore start/end node to prevent drawing over
@@ -161,17 +193,16 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                     }
                 }
                 if (!path.contains(endNode)) { // TODO: Handle end node not found
-
                 }
             }
 
             resetPathfinding(); // Reset variables after pathfinding complete
             disableAlgorithmSelect(false);
         });
-        this.timerPathNodeRefresh.start();
-    }
+        this.threadPathNodeRefresh.start();
+    }*/
 
-    // Listener methods
+    // LISTENER METHODS
     // ActionListener
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == this.timerBoard) { // 60FPS Timer
@@ -211,32 +242,24 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                 this.butStartSearch.setText("Pause pathfinding");
 
                 Pathfinder pathfinder = new Pathfinder(this.grid, this.startNode, this.endNode);
-                ArrayList<Node> searchPath, shortestPath;
+                ArrayList<Node> searchPath = new ArrayList<>(), shortestPath;
 
                 if (this.rbBFS.isSelected()) { // Breadth-first search
                     searchPath = pathfinder.bfs();
-                    shortestPath = pathfinder.getShortestPath();
-
-                    if (shortestPath != null) { // Reached end node
-                        connectMultiplePaths(new ArrayList<>(
-                                Arrays.asList(searchPath, shortestPath))
-                        );
-                    } else { // Didn't reach end node
-                        connectPath(searchPath);
-                    }
                 } else if (this.rbDFS.isSelected()) { // Depth-first search
                     searchPath = pathfinder.dfs();
-                    shortestPath = pathfinder.getShortestPath(); // TODO: fix setting parents in DFS
-
-                    if (shortestPath != null) { // Reached end node
-                        connectMultiplePaths(new ArrayList<>(
-                                Arrays.asList(searchPath, shortestPath))
-                        );
-                    } else { // Didn't reach end node
-                        connectPath(searchPath);
-                    }
                 } else if (this.rbAStar.isSelected()) { // A* search algorithm
+                    searchPath = pathfinder.astar();
                 } else if (this.rbDijkstra.isSelected()) { // Dijkstra's algorithm
+                    searchPath = pathfinder.dijkstra();
+                }
+
+                shortestPath = pathfinder.getShortestPath();
+                if (shortestPath != null) { // Reached end node
+                    //connectMultiplePaths(new ArrayList<>(Arrays.asList(searchPath, shortestPath)));
+                    connectPath(searchPath, shortestPath);
+                } else { // Didn't reach end node
+                    connectPath(searchPath);
                 }
             }
         }
@@ -332,23 +355,31 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         this.boardPanel.addMouseMotionListener(this);
         //this.boardPanel.setBackground(Color.DARK_GRAY);
 
-        // Draw tool radio buttons
+        // DRAW TOOL RADIO BUTTONS
+        ButtonGroup drawTools = new ButtonGroup(); // Only allows one draw tool radio button to be pressed at a time
+        drawTools.add(this.rbStartNode);
+        drawTools.add(this.rbEndNode);
+        drawTools.add(this.rbBarrierNode);
+
+        // Start node
         this.boardPanel.add(this.rbStartNode);
         this.rbStartNode.setBounds(20,100,200,20);
         this.rbStartNode.setFocusable(false);
         this.rbStartNode.addActionListener(this);
 
+        // End node
         this.boardPanel.add(this.rbEndNode);
         this.rbEndNode.setBounds(20,100+(20),200,20);
         this.rbEndNode.setFocusable(false);
         this.rbEndNode.addActionListener(this);
 
+        // Barrier node
         this.boardPanel.add(this.rbBarrierNode);
         this.rbBarrierNode.setBounds(20,100+(20*2),100,20);
         this.rbBarrierNode.setFocusable(false);
         this.rbBarrierNode.addActionListener(this);
 
-        this.boardPanel.add(this.labelErase);
+        this.boardPanel.add(this.labelErase); // "Right click to erase" label
         this.labelErase.setBounds(20,100+(20*3),150,20);
 
         // Grid width slider
@@ -362,47 +393,48 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         this.sliderGridWidth.addChangeListener(this);
         generateNewGrid(this.sliderGridWidth.getValue()); // Generate node grid
 
+        // Reset grid button
         this.boardPanel.add(this.butResetGrid);
         this.butResetGrid.setBounds(20,100+(20*7),150,40);
         this.butResetGrid.setFocusable(false);
         this.butResetGrid.addActionListener(this);
 
+        // Clear grid button
         this.boardPanel.add(this.butClearGrid);
         this.butClearGrid.setBounds(20,100+(20*9),150,40);
         this.butClearGrid.setFocusable(false);
         this.butClearGrid.addActionListener(this);
 
-        ButtonGroup drawTools = new ButtonGroup(); // Only allows one draw tool radio button to be pressed at a time
-        drawTools.add(this.rbStartNode);
-        drawTools.add(this.rbEndNode);
-        drawTools.add(this.rbBarrierNode);
-
-        // Algorithm type radio buttons
-        this.boardPanel.add(this.rbBFS);
-        this.rbBFS.setBounds(20,350,200,20);
-        this.rbBFS.setFocusable(false);
-        this.rbBFS.addActionListener(this);
-
-        this.boardPanel.add(this.rbDFS);
-        this.rbDFS.setBounds(20,350+(20),200,20);
-        this.rbDFS.setFocusable(false);
-        this.rbDFS.addActionListener(this);
-
-        this.boardPanel.add(this.rbAStar);
-        this.rbAStar.setBounds(20,350+(20*2),200,20);
-        this.rbAStar.setFocusable(false);
-        this.rbAStar.addActionListener(this);
-
-        this.boardPanel.add(this.rbDijkstra);
-        this.rbDijkstra.setBounds(20,350+(20*3),200,20);
-        this.rbDijkstra.setFocusable(false);
-        this.rbDijkstra.addActionListener(this);
-
+        // ALGORITHM TYPE RADIO BUTTONS
         ButtonGroup algoTypes = new ButtonGroup(); // Only allows one draw tool radio button to be pressed at a time
         algoTypes.add(this.rbBFS);
         algoTypes.add(this.rbDFS);
         algoTypes.add(this.rbAStar);
         algoTypes.add(this.rbDijkstra);
+
+        // BFS
+        this.boardPanel.add(this.rbBFS);
+        this.rbBFS.setBounds(20,350,200,20);
+        this.rbBFS.setFocusable(false);
+        this.rbBFS.addActionListener(this);
+
+        // DFS
+        this.boardPanel.add(this.rbDFS);
+        this.rbDFS.setBounds(20,350+(20),200,20);
+        this.rbDFS.setFocusable(false);
+        this.rbDFS.addActionListener(this);
+
+        // A*
+        this.boardPanel.add(this.rbAStar);
+        this.rbAStar.setBounds(20,350+(20*2),200,20);
+        this.rbAStar.setFocusable(false);
+        this.rbAStar.addActionListener(this);
+
+        // Dijkstra
+        this.boardPanel.add(this.rbDijkstra);
+        this.rbDijkstra.setBounds(20,350+(20*3),200,20);
+        this.rbDijkstra.setFocusable(false);
+        this.rbDijkstra.addActionListener(this);
 
         // Path node refresh slider
         this.boardPanel.add(this.sliderPathRefreshInterval);
@@ -422,6 +454,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         tablePathRefreshInterval.put(this.sliderPathRefreshInterval.getMaximum(), new JLabel("Slow"));
         this.sliderPathRefreshInterval.setLabelTable(tablePathRefreshInterval);
 
+        // Start pathfinding button (also resume/pause)
         this.boardPanel.add(this.butStartSearch);
         this.butStartSearch.setBounds(20,350+(20*7),150,40);
         this.butStartSearch.setFocusable(false);

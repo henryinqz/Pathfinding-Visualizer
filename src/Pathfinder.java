@@ -2,14 +2,20 @@ import java.util.*;
 
 public class Pathfinder {
     // PROPERTIES
-    private ArrayList<Node> open_list, closed_list, path;
+    private ArrayList<Node> path;
     private Node[][] grid;
     private Node startNode, endNode, currentNode;
 
+    // CONSTRUCTOR
+    public Pathfinder(Node[][] grid, Node startNode, Node endNode) {
+        this.grid = grid;
+        this.startNode = startNode;
+        this.endNode = endNode;
+    }
+
     // METHODS
-    // Get shortest path
-    public ArrayList<Node> getShortestPath() {
-        if (this.grid == null || !this.grid[endNode.getY()][endNode.getX()].isVisited()) { // Didn't reach end path
+    public ArrayList<Node> getShortestPath() { // Get shortest path
+        if (this.grid == null || (!this.grid[endNode.getY()][endNode.getX()].isVisited() && !Node.isEqual(this.currentNode, this.endNode))) { // Didn't reach end path
             return null;
         } else {
             ArrayList<Node> shortestPath = new ArrayList<>();
@@ -22,36 +28,7 @@ public class Pathfinder {
             return shortestPath;
         }
     }
-
-    // Breadth-first search
-    public ArrayList<Node> bfs() {
-        this.path = new ArrayList<>();
-        Queue<Node> queue = new LinkedList<Node>();
-
-        // BFS
-        queue.add(this.startNode);
-        this.grid[this.startNode.getY()][this.startNode.getX()].setVisited(true);
-        while (!queue.isEmpty()) {
-            if (this.grid[endNode.getY()][endNode.getX()].isVisited()) { // Exit method if endNode has been found
-                System.out.println("BFS: End found; breaking");
-                break;
-            }
-
-            Node temp = queue.poll();
-            for (Node neighbor : getNeighbors(temp)) {
-                if (neighbor != null && !neighbor.isVisited() && !neighbor.isBarrier()) {
-                    queue.add(neighbor);
-                    neighbor.setVisited(true);
-
-                    neighbor.setParent(temp);
-                    this.path.add(this.grid[neighbor.getY()][neighbor.getX()]);
-                }
-            }
-        }
-
-        return this.path;
-    }
-    private ArrayList<Node> getNeighbors(Node node) {
+    private ArrayList<Node> getNeighbors(Node node) { // Get neighbours of node in grid
         ArrayList<Node> neighbors = new ArrayList<>();
         int nodeX = node.getX();
         int nodeY = node.getY();
@@ -71,13 +48,44 @@ public class Pathfinder {
         }
         return neighbors;
     }
+    private int getHeuristic(Node start, Node end) { // Calculate heuristic between two nodes (Manhattan distance)
+        int heuristic = Math.abs(start.getX()-end.getX()) + Math.abs(start.getY()-end.getY());
+        return heuristic;
+    }
 
-    // Depth-first search
+    // BREADTH-FIRST SEARCH
+    public ArrayList<Node> bfs() {
+        this.path = new ArrayList<>();
+        Queue<Node> queue = new LinkedList<Node>();
+
+        // BFS algorithm
+        queue.add(this.startNode);
+        this.grid[this.startNode.getY()][this.startNode.getX()].setVisited(true);
+        while (!queue.isEmpty()) {
+            if (this.grid[endNode.getY()][endNode.getX()].isVisited()) { // Exit method if endNode has been found
+                System.out.println("BFS: End found; breaking");
+                break;
+            }
+
+            this.currentNode = queue.poll();
+            for (Node neighbor : getNeighbors(this.currentNode)) {
+                if (neighbor != null && !neighbor.isVisited() && !neighbor.isBarrier()) {
+                    queue.add(neighbor);
+                    neighbor.setVisited(true);
+
+                    neighbor.setParent(this.currentNode);
+                    this.path.add(this.grid[neighbor.getY()][neighbor.getX()]);
+                }
+            }
+        }
+
+        return this.path;
+    }
+
+    // DEPTH-FIRST SEARCH
     public ArrayList<Node> dfs() {
         this.path = new ArrayList();
-
-//        dfsRecursive(this.startNode.getX(), this.startNode.getY());
-        dfsRecursive(this.startNode, null);
+        dfsRecursive(this.startNode, null); // DFS algorithm
         return this.path;
     }
     private void dfsRecursive(Node currentNode, Node parentNode) {
@@ -113,68 +121,95 @@ public class Pathfinder {
         } catch (ArrayIndexOutOfBoundsException e) {
         }
     }
-//    private void dfsRecursive(int currentX, int currentY) {
-//        if (this.grid[endNode.getY()][endNode.getX()].isVisited()) { // Exit method if endNode has been found
-//            System.out.println("DFS: End found; returning");
-//            return;
-//        } else if (currentY < 0 || currentY >= this.grid.length || currentX < 0 || currentX >= this.grid[currentY].length || this.grid[currentY][currentX].isBarrier() || this.grid[currentY][currentX].isVisited()) { // Exit method if out of bounds or on closed node(?)
-//            return;
-//        }
-//
-//        this.grid[currentY][currentX].setVisited(true);
-//        this.path.add(this.grid[currentY][currentX]);
-//
-//        this.grid[currentY-1][currentX].setParent(this.grid[currentY][currentX]);
-//        dfsRecursive(currentX, currentY - 1); // Up
-//        dfsRecursive(currentX + 1, currentY); // Right
-//        dfsRecursive(currentX, currentY + 1); // Down
-//        dfsRecursive(currentX - 1, currentY); // Left
-//    }
+    /*private void dfsRecursive(int currentX, int currentY) {
+        if (this.grid[endNode.getY()][endNode.getX()].isVisited()) { // Exit method if endNode has been found
+            System.out.println("DFS: End found; returning");
+            return;
+        } else if (currentY < 0 || currentY >= this.grid.length || currentX < 0 || currentX >= this.grid[currentY].length || this.grid[currentY][currentX].isBarrier() || this.grid[currentY][currentX].isVisited()) { // Exit method if out of bounds or on closed node(?)
+            return;
+        }
 
-    /*public void astar(int[][] maze, Node start, Node end) {
-        // Create start & end nodes
-        this.start_node = start;
-        start_node.setF(0);
-        start_node.setG(0);
-        start_node.setH(0);
+        this.grid[currentY][currentX].setVisited(true);
+        this.path.add(this.grid[currentY][currentX]);
 
-        this.end_node = end;
-        end_node.setF(0);
-        end_node.setG(0);
-        end_node.setH(0);
+        this.grid[currentY-1][currentX].setParent(this.grid[currentY][currentX]);
+        dfsRecursive(currentX, currentY - 1); // Up
+        dfsRecursive(currentX + 1, currentY); // Right
+        dfsRecursive(currentX, currentY + 1); // Down
+        dfsRecursive(currentX - 1, currentY); // Left
+    }*/
 
-        // Initialize ArrayLists of open & closed nodes
-        open_list = new ArrayList<>();
-        closed_list = new ArrayList<>();
+    // A* SEARCH ALGORITHM
+    public ArrayList<Node> astar() {
+        this.path = new ArrayList();
 
-        // Add starting node to list of open nodes
-        open_list.add(start_node);
+        // Initialize F/G/H costs of nodes
+        for (int i=0; i<this.grid.length; i++) {
+            for (int j=0; j<this.grid[i].length; j++) {
+                this.grid[i][j].setG(Integer.MAX_VALUE);
+                this.grid[i][j].setF(Integer.MAX_VALUE);
+            }
+        }
+        this.startNode.setG(0);
+        this.startNode.setH(getHeuristic(this.startNode, this.endNode));
+        this.startNode.setF(this.startNode.getG() + this.startNode.getH());
+//        this.endNode.setG(0);
+//        this.endNode.setH(0);
+//        this.endNode.setF(0);
 
-        while (!open_list.isEmpty()) {
-            current_node = open_list.get(0);
-            int current_index = 0;
-            for (int i = 0; i < open_list.size(); i++) { // Iterate through open nodes to find lowest node w/ F-cost
-                if (current_node.getF() > open_list.get(i).getF()) { // If new F-cost is less than current F-cost
-                    current_node = open_list.get(i); // Update current node to new node
-                    current_index = i;
+        ArrayList<Node> openList = new ArrayList<>(); // Initialize ArrayLists of open & closed nodes
+        ArrayList<Node> closedList = new ArrayList<>();
+
+        // A* algorithm
+        openList.add(this.startNode);
+        while (!openList.isEmpty()) {
+            this.currentNode = openList.get(0);
+            for (int i=0; i<openList.size(); i++) { // Set currentNode to node on openList w/ lowest F-cost
+                if (openList.get(i).getF() < this.currentNode.getF()) { // New F-cost is less than current F-cost
+                    this.currentNode = openList.get(i);
                 }
             }
 
-            // Move current node from open -> closed list
-            open_list.remove(current_index);
-            closed_list.add(current_node);
-
-            if (Node.isEqual(current_node, end_node) == true) {
-
+            //if (this.grid[endNode.getY()][endNode.getX()].isVisited()) {
+            if (Node.isEqual(this.currentNode, this.endNode)) { // Exit method if endNode has been found
+                System.out.println("A*: End found; breaking");
+                break;
             }
 
-        }
-    }*/
+            openList.remove(this.currentNode); // Move current node from open -> closed list
+            closedList.add(this.currentNode);
 
-    // CONSTRUCTOR
-    public Pathfinder(Node[][] grid, Node startNode, Node endNode) {
-        this.grid = grid;
-        this.startNode = startNode;
-        this.endNode = endNode;
+            for (Node neighbor : getNeighbors(this.currentNode)) {
+                if (neighbor != null && !closedList.contains(neighbor) && !neighbor.isBarrier()) {
+                    int tempG = this.currentNode.getG() + 1;
+                    if (tempG < neighbor.getG()) {
+                        neighbor.setParent(this.currentNode);
+                        neighbor.setG(tempG);
+                        neighbor.setF(tempG + getHeuristic(neighbor, this.endNode));
+                        if (!openList.contains(neighbor)) {
+                            openList.add(neighbor);
+                        }
+                    }
+
+                    this.path.add(this.grid[neighbor.getY()][neighbor.getX()]);
+                }
+            }
+
+            if (this.currentNode != this.startNode) {
+                closedList.add(this.currentNode);
+            }
+        }
+
+        this.startNode.setStart();
+        this.endNode.setEnd();
+
+        return this.path;
+    }
+
+    // DIJKSTRA'S ALGORITHM
+    public ArrayList<Node> dijkstra() {
+        this.path = new ArrayList();
+
+        return this.path;
     }
 }

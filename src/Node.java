@@ -1,10 +1,10 @@
 import java.awt.*;
-import java.util.ArrayList;
 
 public class Node {
     // PROPERTIES
-    private int x, y, g, h, f;
+    private int x, y;
     private Node parent;
+    private int g, h, f; // G/H/F-cost variables for A* pathfinding
 
     private Color color; // WHITE=empty, BLACK=barrier, GREEN=start, RED=end
     public static final Color EMPTY_NODE = Color.WHITE,
@@ -95,8 +95,8 @@ public class Node {
     public void setEnd() {
         this.color = END_NODE;
     }
-    public void setSearched() {
-        if (isSearched()) {
+    public void setSearched(boolean shortestNode) {
+        if (shortestNode) {
             this.color = SEARCHED_NODE_2;
         } else {
             this.color = SEARCHED_NODE;
