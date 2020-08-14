@@ -140,10 +140,6 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                 }
                 boardPanel.endNotFound(true);
             }
-
-            resetPathfinding(); // Reset variables after pathfinding complete
-            disableAlgorithmSelect(false);
-            this.boardPanel.searchComplete(true);
         });
         this.threadPathNodeRefresh.start();
     }
@@ -180,10 +176,6 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                     }
                 }
             }
-
-            resetPathfinding(); // Reset variables after pathfinding complete
-            disableAlgorithmSelect(false);
-            this.boardPanel.searchComplete(true);
         });
         this.threadPathNodeRefresh.start();
     }
@@ -212,9 +204,6 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                     boardPanel.endNotFound(true);
                 }
             }
-
-            resetPathfinding(); // Reset variables after pathfinding complete
-            disableAlgorithmSelect(false);
         });
         this.threadPathNodeRefresh.start();
     }*/
@@ -278,6 +267,19 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                 } else { // Didn't reach end node
                     connectPath(searchPath);
                 }
+
+                new Thread(() -> { // Thread to wait for connect path thread to end
+                    if (this.threadPathNodeRefresh != null) { // If connectPath thread is running, wait for it to die before executing
+                        try {
+                            this.threadPathNodeRefresh.join();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        resetPathfinding(); // Reset variables after pathfinding complete
+                        disableAlgorithmSelect(false); // Enable algorithm select radio buttons
+                        this.boardPanel.searchComplete(true); // Enable colour fade animation of empty nodes
+                    }
+                }).start();
             }
         }
     }
@@ -487,8 +489,8 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     private int rgbMax = 230, rgbMin = 15; // Limit color fade range
     private int r=rgbMax, g=rgbMin, b=rgbMin;
 
-    public void paintComponent(Graphics graphics) {
-        Graphics2D g2 = (Graphics2D)graphics;
+    public void paintComponent(Graphics graphic) {
+        Graphics2D g2 = (Graphics2D)graphic;
         super.paintComponent(g2);
 
         if (pathfindingComplete == true) { // Modified RGB Color fade algorithm from https://codepen.io/Codepixl/pen/ogWWaK/
