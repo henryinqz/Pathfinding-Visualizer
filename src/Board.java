@@ -26,10 +26,10 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     private boolean disableDraw = false;
 
     // Algorithm types
-    private JRadioButton rbBFS = new JRadioButton("Breadth-first search", true);
-    private JRadioButton rbDFS = new JRadioButton("Depth-first search");
-    private JRadioButton rbAStar = new JRadioButton("A* search algorithm");
+    private JRadioButton rbAStar = new JRadioButton("A* search algorithm", true);
     private JRadioButton rbDijkstra = new JRadioButton("Dijkstra's algorithm");
+    private JRadioButton rbBFS = new JRadioButton("Breadth-first search");
+    private JRadioButton rbDFS = new JRadioButton("Depth-first search");
 
     private JButton butStartSearch = new JButton("Start pathfinding");
     private boolean disableAlgoSelect = false;
@@ -250,14 +250,14 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                 Pathfinder pathfinder = new Pathfinder(this.grid, this.startNode, this.endNode);
                 ArrayList<Node> searchPath = new ArrayList<>(), shortestPath;
 
-                if (this.rbBFS.isSelected()) { // Breadth-first search
-                    searchPath = pathfinder.bfs();
-                } else if (this.rbDFS.isSelected()) { // Depth-first search
-                    searchPath = pathfinder.dfs();
-                } else if (this.rbAStar.isSelected()) { // A* search algorithm
+                if (this.rbAStar.isSelected()) { // A* search algorithm
                     searchPath = pathfinder.astar();
                 } else if (this.rbDijkstra.isSelected()) { // Dijkstra's algorithm
                     searchPath = pathfinder.dijkstra();
+                } else if (this.rbBFS.isSelected()) { // Breadth-first search
+                    searchPath = pathfinder.bfs();
+                } else if (this.rbDFS.isSelected()) { // Depth-first search
+                    searchPath = pathfinder.dfs();
                 }
 
                 shortestPath = pathfinder.getShortestPath();
@@ -338,15 +338,15 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     public void disableAlgorithmSelect(boolean disableAlgoSelect) {
         this.disableAlgoSelect = disableAlgoSelect;
         if (this.disableAlgoSelect == true) { // Algorithm select has been disabled; prevent changes to pathfinding radio buttons
-            this.rbBFS.setEnabled(false);
-            this.rbDFS.setEnabled(false);
             this.rbAStar.setEnabled(false);
             this.rbDijkstra.setEnabled(false);
+            this.rbBFS.setEnabled(false);
+            this.rbDFS.setEnabled(false);
         } else { // Algorithm select has been enabled; allow changes to pathfinding radio buttons
-            this.rbBFS.setEnabled(true);
-            this.rbDFS.setEnabled(true);
             this.rbAStar.setEnabled(true);
             this.rbDijkstra.setEnabled(true);
+            this.rbBFS.setEnabled(true);
+            this.rbDFS.setEnabled(true);
         }
     }
     public void disableDrawing(boolean disableDraw) {
@@ -426,34 +426,34 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
 
         // ALGORITHM TYPE RADIO BUTTONS
         ButtonGroup algoTypes = new ButtonGroup(); // Only allows one draw tool radio button to be pressed at a time
-        algoTypes.add(this.rbBFS);
-        algoTypes.add(this.rbDFS);
         algoTypes.add(this.rbAStar);
         algoTypes.add(this.rbDijkstra);
-
-        // BFS
-        this.boardPanel.add(this.rbBFS);
-        this.rbBFS.setBounds(20,350,200,20);
-        this.rbBFS.setFocusable(false);
-        this.rbBFS.addActionListener(this);
-
-        // DFS
-        this.boardPanel.add(this.rbDFS);
-        this.rbDFS.setBounds(20,350+(20),200,20);
-        this.rbDFS.setFocusable(false);
-        this.rbDFS.addActionListener(this);
+        algoTypes.add(this.rbBFS);
+        algoTypes.add(this.rbDFS);
 
         // A*
         this.boardPanel.add(this.rbAStar);
-        this.rbAStar.setBounds(20,350+(20*2),200,20);
+        this.rbAStar.setBounds(20,350,200,20);
         this.rbAStar.setFocusable(false);
         this.rbAStar.addActionListener(this);
 
         // Dijkstra
         this.boardPanel.add(this.rbDijkstra);
-        this.rbDijkstra.setBounds(20,350+(20*3),200,20);
+        this.rbDijkstra.setBounds(20,350+(20),200,20);
         this.rbDijkstra.setFocusable(false);
         this.rbDijkstra.addActionListener(this);
+
+        // BFS
+        this.boardPanel.add(this.rbBFS);
+        this.rbBFS.setBounds(20,350+(20*2),200,20);
+        this.rbBFS.setFocusable(false);
+        this.rbBFS.addActionListener(this);
+
+        // DFS
+        this.boardPanel.add(this.rbDFS);
+        this.rbDFS.setBounds(20,350+(20*3),200,20);
+        this.rbDFS.setFocusable(false);
+        this.rbDFS.addActionListener(this);
 
         // Path node refresh slider
         this.boardPanel.add(this.sliderPathRefreshInterval);
@@ -497,19 +497,18 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
             /*r = r<0 ? 0 : Math.min(r, this.rgbMax); // Out of bound checks
             g = g<0 ? 0 : Math.min(g, this.rgbMax);
             b = b<0 ? 0 : Math.min(b, this.rgbMax);*/
-
             int increment = 2;
-            if (r > this.rgbMin && g <this.rgbMax && b <= this.rgbMin) {
-                r-=increment;
-                g+=increment;
+            if (this.r>this.rgbMin && this.g<this.rgbMax && this.b<=this.rgbMin) {
+                this.r -= increment;
+                this.g += increment;
             }
-            if (g > this.rgbMin && b < this.rgbMax && r <= this.rgbMin) {
-                g-=increment;
-                b+=increment;
+            if (this.g>this.rgbMin && this.b<this.rgbMax && this.r<=this.rgbMin) {
+                this.g -= increment;
+                this.b += increment;
             }
-            if (b > this.rgbMin && r < this.rgbMax && g <= this.rgbMin) {
-                r+=increment;
-                b-=increment;
+            if (this.b>this.rgbMin && this.r<this.rgbMax && this.g<=this.rgbMin) {
+                this.r += increment;
+                this.b -= increment;
             }
         }
 
@@ -542,7 +541,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
             for (int j=0; j<grid[i].length; j++) {
                 g2.setColor(grid[i][j].getColor());
                 if (this.pathfindingComplete && grid[i][j].isEmpty()) { // Color shift white empty nodes after pathfinding is done
-                    g2.setColor(new Color(r, g, b));
+                    g2.setColor(new Color(this.r, this.g, this.b));
                 }
                 g2.fillRect(Main.MENU_WIDTH+(j*sideLength), i*sideLength, sideLength, sideLength); // Draw node
 
