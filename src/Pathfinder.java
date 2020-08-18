@@ -47,6 +47,25 @@ public class Pathfinder {
         if (nodeX < this.grid[nodeY].length-1) { // Add right neighbour
             neighbors.add(this.grid[nodeY][nodeX+1]);
         }
+
+        // Diagonals (also blocks going through barrier corners)
+//        if (nodeY > 0) { // Top
+//            if (nodeX > 0 && (!this.grid[nodeY-1][nodeX].isBarrier() && !this.grid[nodeY][nodeX-1].isBarrier())) { // Topleft
+//                neighbors.add(this.grid[nodeY-1][nodeX-1]);
+//            }
+//            if (nodeX < this.grid[nodeY].length-1 && (!this.grid[nodeY-1][nodeX].isBarrier() && !this.grid[nodeY][nodeX+1].isBarrier())) { // Topright
+//                neighbors.add(this.grid[nodeY-1][nodeX+1]);
+//            }
+//        }
+//        if (nodeY < this.grid.length-1) { // Bottom
+//            if (nodeX > 0 && (!this.grid[nodeY+1][nodeX].isBarrier() && !this.grid[nodeY][nodeX-1].isBarrier())) { // Bottomleft
+//                neighbors.add(this.grid[nodeY+1][nodeX-1]);
+//            }
+//            if (nodeX < this.grid[nodeY].length-1 && (!this.grid[nodeY+1][nodeX].isBarrier() && !this.grid[nodeY][nodeX+1].isBarrier())) { // Bottomright
+//                neighbors.add(this.grid[nodeY+1][nodeX+1]);
+//            }
+//        }
+
         return neighbors;
     }
     private int getHeuristic(Node start, Node end) { // Calculate heuristic between two nodes (Manhattan distance)
@@ -122,26 +141,9 @@ public class Pathfinder {
         } catch (ArrayIndexOutOfBoundsException e) {
         }
     }
-    /*private void dfsRecursive(int currentX, int currentY) {
-        if (this.grid[endNode.getY()][endNode.getX()].isVisited()) { // Exit method if endNode has been found
-            System.out.println("DFS: End found; returning");
-            return;
-        } else if (currentY < 0 || currentY >= this.grid.length || currentX < 0 || currentX >= this.grid[currentY].length || this.grid[currentY][currentX].isBarrier() || this.grid[currentY][currentX].isVisited()) { // Exit method if out of bounds or on closed node(?)
-            return;
-        }
-
-        this.grid[currentY][currentX].setVisited(true);
-        this.path.add(this.grid[currentY][currentX]);
-
-        this.grid[currentY-1][currentX].setParent(this.grid[currentY][currentX]);
-        dfsRecursive(currentX, currentY - 1); // Up
-        dfsRecursive(currentX + 1, currentY); // Right
-        dfsRecursive(currentX, currentY + 1); // Down
-        dfsRecursive(currentX - 1, currentY); // Left
-    }*/
 
     // A* SEARCH ALGORITHM
-    public ArrayList<Node> astar() { // TODO: Count/track order of parents to be shortest
+    public ArrayList<Node> astar() { // TODO: Count/track order of parents to be shortest (?)
         this.path = new ArrayList();
 
         for (int i=0; i<this.grid.length; i++) { // Initialize G/H/F costs of nodes
@@ -169,15 +171,13 @@ public class Pathfinder {
                     this.currentNode = openList.get(i);
                 }
             }
+            openList.remove(this.currentNode); // Move current node from open -> closed list
 
             //if (this.grid[endNode.getY()][endNode.getX()].isVisited()) {
             if (Node.isEqual(this.currentNode, this.endNode)) { // Exit method if endNode has been found
                 System.out.println("A*: End found; breaking");
                 break;
             }
-
-            openList.remove(this.currentNode); // Move current node from open -> closed list
-            closedList.add(this.currentNode);
 
             for (Node neighbor : getNeighbors(this.currentNode)) {
                 if (neighbor != null && !closedList.contains(neighbor) && !neighbor.isBarrier()) {
@@ -190,24 +190,18 @@ public class Pathfinder {
                             openList.add(neighbor);
                         }
                     }
-
                     this.path.add(this.grid[neighbor.getY()][neighbor.getX()]);
                 }
             }
-
             if (this.currentNode != this.startNode) {
                 closedList.add(this.currentNode);
             }
         }
-
-        this.startNode.setStart();
-        this.endNode.setEnd();
-
         return this.path;
     }
 
     // DIJKSTRA'S ALGORITHM
-    public ArrayList<Node> dijkstra() {
+    public ArrayList<Node> dijkstra() { //TODO: Finish dijkstra method
         this.path = new ArrayList();
 
         return this.path;

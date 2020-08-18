@@ -120,13 +120,13 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         this.threadPathNodeRefresh = new Thread(() -> {
             for (Node pathNode : path) { // Loop through path to add to grid
                 if (!pathNode.isStart() && !pathNode.isEnd()) { // Ignore start/end node to prevent drawing over
-                    pathNode.setSearched(false);
                     try {
                         Thread.sleep(this.refreshInterval); // Delay before next path node is added to grid
                     } catch(InterruptedException e) {
                         e.printStackTrace();
                     }
-                    while (this.pathfindingPaused == true) { // Loop to pause pathfinding TODO: remove sout since empty while loop doesn't run
+                    pathNode.setSearched(false);
+                    while (this.pathfindingPaused == true) { // Loop to pause pathfinding TODO: remove sout (empty while loop doesn't run)
                         System.out.println("Pausing");
                     }
                 }
@@ -148,13 +148,13 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
             if (searchPath != null) {
                 for (Node pathNode : searchPath) { // Loop through path to add to grid
                     if (!pathNode.isStart() && !pathNode.isEnd()) { // Ignore start/end node to prevent drawing over
-                        pathNode.setSearched(false);
                         try {
                             Thread.sleep(this.refreshInterval); // Delay before next path node is added to grid
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        while (this.pathfindingPaused == true) { // Loop to pause pathfinding TODO: remove sout since empty while loop doesn't run
+                        pathNode.setSearched(false);
+                        while (this.pathfindingPaused == true) { // Loop to pause pathfinding TODO: remove sout (empty while loop doesn't run)
                             System.out.println("Pausing");
                         }
                     }
@@ -164,12 +164,12 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
             if (shortestPath != null) {
                 for (Node pathNode : shortestPath) { // Loop through path to add to grid
                     if (!pathNode.isStart() && !pathNode.isEnd()) { // Ignore start/end node to prevent drawing over
-                        pathNode.setSearched(true);
                         try {
                             Thread.sleep(this.refreshInterval); // Delay before next path node is added to grid
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
+                        pathNode.setSearched(true);
                         while (this.pathfindingPaused == true) { // Loop to pause pathfinding TODO: remove sout since empty while loop doesn't run
                             System.out.println("Pausing");
                         }
@@ -179,34 +179,6 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         });
         this.threadPathNodeRefresh.start();
     }
-    /*public void connectMultiplePaths(ArrayList<ArrayList<Node>> listPaths) { // Add multiple paths to grid
-        this.threadPathNodeRefresh = new Thread(() -> {
-            for (ArrayList<Node> path : listPaths) {
-                for (Node pathNode : path) { // Loop through path to add to grid
-                    if (!pathNode.isStart() && !pathNode.isEnd()) { // Ignore start/end node to prevent drawing over
-                        pathNode.setSearched();
-                        try {
-                            Thread.sleep(this.refreshInterval); // Delay before next path node is added to grid
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        while (this.pathfindingPaused == true) { // Loop to pause pathfinding TODO: remove sout since empty while loop doesn't run
-                            System.out.println("Pausing");
-                        }
-                    }
-                }
-                if (!path.contains(endNode)) {
-                    try {
-                        Thread.sleep(this.refreshInterval); // Delay
-                    } catch(InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    boardPanel.endNotFound(true);
-                }
-            }
-        });
-        this.threadPathNodeRefresh.start();
-    }*/
 
     // LISTENER METHODS
     // ActionListener
@@ -229,7 +201,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                 resetPathfinding(); // Reset variables after pathfinding complete
             } else { // No option
             }
-        } else if (evt.getSource() == this.butStartSearch) { // Start pathfinding TODO: finish methods
+        } else if (evt.getSource() == this.butStartSearch) { // Start pathfinding
             disableDrawing(true); // Prevent drawing during pathfinding
             disableAlgorithmSelect(true); // Prevent changing algorithm during pathfinding
 
@@ -513,7 +485,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         }
 
         drawNodes(g2, Board.grid, Board.nodeSideLength);
-        drawGrid(g2, Board.grid, Board.nodeSideLength);
+        drawGridLines(g2, Board.grid, Board.nodeSideLength);
 
         if (this.endNotFound == true) {
             g2.setColor(new Color(0,0,0,0.5f)); // Darken screen (Black w/ 50% opacity)
@@ -525,10 +497,10 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
             int stringWidth = g2.getFontMetrics().stringWidth(noPathFound);
             g2.drawString(noPathFound, Main.MENU_WIDTH+(Main.FRAME_HEIGHT/2)-(stringWidth/2), (Main.FRAME_HEIGHT/2));
         }
-
     }
 
-    public void drawGrid(Graphics2D g2, Node[][] grid, int sideLength) {
+    public void drawGridLines(Graphics2D g2, Node[][] grid, int sideLength) {
+        g2.setColor(Color.GRAY);
         for (int i=0; i<=grid.length; i++) { // Horizontal grid lines
             g2.drawLine(Main.MENU_WIDTH,i*sideLength, Main.FRAME_WIDTH,i*sideLength);
         }
