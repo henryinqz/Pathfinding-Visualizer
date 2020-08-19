@@ -36,6 +36,9 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     private boolean pathfindingOngoing = false;
     private boolean pathfindingPaused = false;
 
+    // Maze generator
+    private JButton butGenerateMaze = new JButton("Generate maze");
+
     // Path node refresh slider
     private Thread threadPathNodeRefresh;
     private int refreshInterval = 15; // Used for connect path thread to adjust refresh interval for adding pathfinding nodes
@@ -114,6 +117,13 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         }
         this.boardPanel.endNotFound(false);
         this.boardPanel.searchComplete(false);
+    }
+    public void clearGrid() { // Completely clear grid
+        generateNewGrid(gridWidth); // Regenerate grid
+        disableDrawing(false); // Enable drawing
+        disableAlgorithmSelect(false); // Enable algorithm selection
+
+        resetPathfinding(); // Reset variables after pathfinding complete
     }
 
     public void connectPath(ArrayList<Node> path) { // Add path to grid
@@ -194,12 +204,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         } else if (evt.getSource() == this.butClearGrid) {
             if (JOptionPane.showConfirmDialog(null, "Are you sure you want to clear the grid?", "Warning",
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { // Confirm clear grid dialog. Yes option.
-                generateNewGrid(gridWidth); // Regenerate grid
-                disableDrawing(false); // Enable drawing
-                disableAlgorithmSelect(false); // Enable algorithm selection
-
-                resetPathfinding(); // Reset variables after pathfinding complete
-            } else { // No option
+                clearGrid();
             }
         } else if (evt.getSource() == this.butStartSearch) { // Start pathfinding
             disableDrawing(true); // Prevent drawing during pathfinding
@@ -253,8 +258,19 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                     }
                 }).start();
             }
+        } else if (evt.getSource() == this.butGenerateMaze) {
+            new Thread(() -> {
+                if (JOptionPane.showConfirmDialog(null, "To generate a maze the current grid will be reset. Are you sure you want to clear the grid?", "Warning",
+                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { // Confirm clear grid dialog. Yes option.
+                    clearGrid();
+
+                    MazeGenerator.recursiveDivision(this.grid, 0, 0, gridWidth-1, gridWidth-1);
+                    System.out.println("RD Done");
+                }
+            }).start();
         }
     }
+
     public void resetPathfinding() { // Reset pathfinding variables
         this.pathfindingOngoing = false;
         this.pathfindingPaused = false;
@@ -452,6 +468,12 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         this.butStartSearch.addActionListener(this);
         this.butStartSearch.setEnabled(false); // Set to false until start/end nodes are created
         //this.butStartSearch.setBackground(Color.GREEN);
+
+        // Maze generator button
+        this.boardPanel.add(this.butGenerateMaze);
+        this.butGenerateMaze.setBounds(20,350+(20*11),150,40);
+        this.butGenerateMaze.setFocusable(false);
+        this.butGenerateMaze.addActionListener(this);
 
         this.timerBoard.start(); // 60FPS repaint timer
     }
