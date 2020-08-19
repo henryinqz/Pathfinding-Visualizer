@@ -16,7 +16,6 @@ public class MazeGenerator {
 
         // Return if width or height is less than 2 (completed)
         if (width < 2 || height < 2) {
-            System.out.println("Returning");
             return;
         }
 
@@ -78,27 +77,34 @@ public class MazeGenerator {
                 boolean leftHole = false, rightHole = false;
                 if (wallX > 0 && grid[wallY][wallX - 1].isEmpty()) {
                     leftHole = true;
-                } else if (endX < grid[0].length-1 && grid[wallY][endX + 1].isEmpty()) {
+                }
+                if (endX < grid[0].length-1 && grid[wallY][endX + 1].isEmpty()) {
                     rightHole = true;
                 }
 
                 if (leftHole && rightHole) {
                     // Loop back and regenerate different wallY
-                    loopBack = true;
-                    System.out.println("[H] Looping back");
+                    if (possibleRows > 1) {
+                        loopBack = true;
+                        System.out.println("[H] Looping back");
+                    } else {
+                        loopBack = false;
+                        System.out.println("[H] Couldn't loop back; not enough possible rows");
+                    }
+
                 } else if (leftHole && !rightHole) {
                     holeX = wallX;
                     loopBack = false;
-                    System.out.println("Left hole");
+                    System.out.println("[H] Left hole");
                 } else if (!leftHole && rightHole) {
                     holeX = endX;
                     loopBack = false;
-                    System.out.println("right hole");
+                    System.out.println("[H] Right hole");
                 } else {
                     // Randomly generate hole
                     holeX = wallX + (int) (Math.random() * width);
                     loopBack = false;
-                    System.out.println("Nothing");
+                    //System.out.println("Nothing");
                 }
             }
             holeY = wallY;
@@ -133,22 +139,20 @@ public class MazeGenerator {
                 } else if (topHole && !bottomHole) {
                     holeY = wallY;
                     loopBack = false;
-                    System.out.println("Top hole");
+                    System.out.println("[V] Top hole");
                 } else if (!topHole && bottomHole) {
                     holeY = endY;
                     loopBack = false;
-                    System.out.println("Bottom hole");
+                    System.out.println("[V] Bottom hole");
                 } else {
                     // Randomly generate hole
                     holeY = wallY + (int)(Math.random()*height);
                     loopBack = false;
-                    System.out.println("Nothing");
+                    //System.out.println("Nothing");
                 }
             }
             holeX = wallX;
         }
-
-
 
         // Determine length of wall
         int length = orientation == HORIZONTAL ? width : height;
@@ -168,40 +172,13 @@ public class MazeGenerator {
             }
         }
 
-        try {
-            Thread.sleep(2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         // Recursively call method
         if (orientation == HORIZONTAL) { // Horizontally split
-            //int newY = wallY-startY+1;
-            //recursiveDivision(grid, startX, startY, endX, newY); // Search above
-            //recursiveDivision(grid, startX, newY, endX, endY); // Search below
-
             recursiveDivision(grid, startX, startY, endX, wallY-1); // Search above: (startX, startY) -> (endX, wallY)
             recursiveDivision(grid, startX, wallY+1, endX, endY); // Search below: (startX, wallY+1) -> (endX, endY)
         } else { // Vertically split
-            //int newX = wallX-startX+1;
-            //recursiveDivision(grid, startX, startY, newX, endY); // Search left side
-            //recursiveDivision(grid, newX, startY, endX, endY); // Search right side
-
             recursiveDivision(grid, startX, startY, wallX-1, endY); // Search left: (startX, startY) -> (wallX-1, endY)
             recursiveDivision(grid, wallX+1, startY, endX, endY); // Search right: (wallX+1, startY) -> (endX, endY)
         }
-
-//        int newX = startX, newY = startY;
-//        int newEndX = orientation == HORIZONTAL ? width : wallX-startX+1;
-//        int newEndY = orientation == HORIZONTAL ? wallY-startY+1 : height;
-//        recursiveDivision(grid, newX, newY, newEndX, newEndY);
-//
-//        newX = orientation == HORIZONTAL ? startX : wallX+1;
-//        newY = orientation == HORIZONTAL ? wallY+1 : startY;
-//        newEndX = orientation == HORIZONTAL ? width : startX+width-wallX-1;
-//        newEndY = orientation == HORIZONTAL ? startY+height-wallY-1 : height;
-//        recursiveDivision(grid, newX, newY, newEndX, newEndY);
     }
-
-    // CONSTRUCTOR (?)
 }
