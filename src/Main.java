@@ -7,6 +7,7 @@ public class Main {
     public final static int MENU_WIDTH = 250;
     public final static int FRAME_HEIGHT = 800;
     public final static int FRAME_WIDTH = MENU_WIDTH + FRAME_HEIGHT;
+    public final static int MENU_PADDING = 10; // 10px
     public static JFrame frame;
 
     // METHODS

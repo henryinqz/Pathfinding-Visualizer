@@ -41,7 +41,7 @@ public class MazeGenerator {
         //int holeX = wallX + (orientation == HORIZONTAL ? (int)(Math.random()*width) : 0);
         //int holeY = wallY + (orientation == HORIZONTAL ? 0 : (int)(Math.random()*height));
 
-        // Assuming startX/startY is empty corner.
+        // Assuming startX/startY & endX/endY are in empty corners.
         // wallX:
         // - Horizontal split: startX
         // - Vertical split: (startX+1) + (2 * randInRange(0,width/2)) < endX
@@ -51,19 +51,6 @@ public class MazeGenerator {
         int wallX=0, wallY=0, holeX=0, holeY=0;
         boolean loopBack = true;
         if (orientation == HORIZONTAL) { // Horizontal split
-//            ArrayList<Integer> possibleRowIndexes = new ArrayList<>();
-//            for (int row=1; row<endY; row+=2) {
-//                // Check if possible row will block any holes
-//                if ((startX > 0 && grid[startY+row][startX-1].isEmpty()) ||
-//                        (endX < grid.length-1) && grid[startY+row][endX+1].isEmpty()) { // Empty node on left or right of row
-//                    System.out.println("Prevented row from blocking hole");
-//                } else {
-//                    possibleRowIndexes.add(row);
-//                }
-//            }
-//            System.out.println(possibleRowIndexes);
-//wallY = startY + possibleRowIndexes.get((int)(Math.random()*possibleRowIndexes.size()));
-
             int possibleRows = 0;
             for (int row=1; row<height; row+=2) {
                 possibleRows++;
@@ -104,7 +91,6 @@ public class MazeGenerator {
                     // Randomly generate hole
                     holeX = wallX + (int) (Math.random() * width);
                     loopBack = false;
-                    //System.out.println("Nothing");
                 }
             }
             holeY = wallY;
@@ -148,7 +134,6 @@ public class MazeGenerator {
                     // Randomly generate hole
                     holeY = wallY + (int)(Math.random()*height);
                     loopBack = false;
-                    //System.out.println("Nothing");
                 }
             }
             holeX = wallX;

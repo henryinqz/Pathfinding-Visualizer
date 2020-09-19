@@ -16,6 +16,9 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     private JSlider sliderGridWidth = new JSlider(10, 40, this.gridWidth); // Grid size slider
     private Node startNode, endNode;
 
+    private JLabel labelMenuTitle = new JLabel("Pathfinding Visualizer");
+    private JLabel labelMenuAuthor = new JLabel("By Henry Wong");
+
     // Draw tools
     private JRadioButton rbStartNode = new JRadioButton("Start node", true);
     private JRadioButton rbEndNode = new JRadioButton("End node");
@@ -362,6 +365,14 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         this.boardPanel.addMouseMotionListener(this);
         //this.boardPanel.setBackground(Color.DARK_GRAY);
 
+        // MENU TITLE/AUTHOR (Top left)
+        this.boardPanel.add(labelMenuTitle);
+        this.labelMenuTitle.setFont(Main.loadFont("Roboto-Bold",22));
+        this.labelMenuTitle.setBounds(Main.MENU_PADDING, Main.MENU_PADDING+10, Main.MENU_WIDTH-5, 30);
+        this.boardPanel.add(labelMenuAuthor);
+        this.labelMenuAuthor.setFont(Main.loadFont("Roboto-Regular",18));
+        this.labelMenuAuthor.setBounds(Main.MENU_PADDING,Main.MENU_PADDING+35, Main.MENU_WIDTH-5, 25);
+
         // DRAW TOOL RADIO BUTTONS
         ButtonGroup drawTools = new ButtonGroup(); // Only allows one draw tool radio button to be pressed at a time
         drawTools.add(this.rbStartNode);
@@ -370,28 +381,28 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
 
         // Start node
         this.boardPanel.add(this.rbStartNode);
-        this.rbStartNode.setBounds(20,100,200,20);
+        this.rbStartNode.setBounds(Main.MENU_PADDING,100,200,20);
         this.rbStartNode.setFocusable(false);
         this.rbStartNode.addActionListener(this);
 
         // End node
         this.boardPanel.add(this.rbEndNode);
-        this.rbEndNode.setBounds(20,100+(20),200,20);
+        this.rbEndNode.setBounds(Main.MENU_PADDING,100+(20),200,20);
         this.rbEndNode.setFocusable(false);
         this.rbEndNode.addActionListener(this);
 
         // Barrier node
         this.boardPanel.add(this.rbBarrierNode);
-        this.rbBarrierNode.setBounds(20,100+(20*2),100,20);
+        this.rbBarrierNode.setBounds(Main.MENU_PADDING,100+(20*2),100,20);
         this.rbBarrierNode.setFocusable(false);
         this.rbBarrierNode.addActionListener(this);
 
         this.boardPanel.add(this.labelErase); // "Right click to erase" label
-        this.labelErase.setBounds(20,100+(20*3),150,20);
+        this.labelErase.setBounds(Main.MENU_PADDING,100+(20*3),150,20);
 
         // Grid width slider
         this.boardPanel.add(this.sliderGridWidth);
-        this.sliderGridWidth.setBounds(20,100+(20*4),150,50);
+        this.sliderGridWidth.setBounds(Main.MENU_PADDING,100+(20*4),150,50);
         this.sliderGridWidth.setPaintLabels(true);
         this.sliderGridWidth.setPaintTicks(true);
         this.sliderGridWidth.setMajorTickSpacing(10);
@@ -402,13 +413,13 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
 
         // Reset grid button
         this.boardPanel.add(this.butResetGrid);
-        this.butResetGrid.setBounds(20,100+(20*7),150,40);
+        this.butResetGrid.setBounds(Main.MENU_PADDING,100+(20*7),150,40);
         this.butResetGrid.setFocusable(false);
         this.butResetGrid.addActionListener(this);
 
         // Clear grid button
         this.boardPanel.add(this.butClearGrid);
-        this.butClearGrid.setBounds(20,100+(20*9),150,40);
+        this.butClearGrid.setBounds(Main.MENU_PADDING,100+(20*9),150,40);
         this.butClearGrid.setFocusable(false);
         this.butClearGrid.addActionListener(this);
 
@@ -421,31 +432,31 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
 
         // A*
         this.boardPanel.add(this.rbAStar);
-        this.rbAStar.setBounds(20,350,200,20);
+        this.rbAStar.setBounds(Main.MENU_PADDING,350,200,20);
         this.rbAStar.setFocusable(false);
         this.rbAStar.addActionListener(this);
 
         // Dijkstra
         this.boardPanel.add(this.rbDijkstra);
-        this.rbDijkstra.setBounds(20,350+(20),200,20);
+        this.rbDijkstra.setBounds(Main.MENU_PADDING,350+(20),200,20);
         this.rbDijkstra.setFocusable(false);
         this.rbDijkstra.addActionListener(this);
 
         // BFS
         this.boardPanel.add(this.rbBFS);
-        this.rbBFS.setBounds(20,350+(20*2),200,20);
+        this.rbBFS.setBounds(Main.MENU_PADDING,350+(20*2),200,20);
         this.rbBFS.setFocusable(false);
         this.rbBFS.addActionListener(this);
 
         // DFS
         this.boardPanel.add(this.rbDFS);
-        this.rbDFS.setBounds(20,350+(20*3),200,20);
+        this.rbDFS.setBounds(Main.MENU_PADDING,350+(20*3),200,20);
         this.rbDFS.setFocusable(false);
         this.rbDFS.addActionListener(this);
 
         // Path node refresh slider
         this.boardPanel.add(this.sliderPathRefreshInterval);
-        this.sliderPathRefreshInterval.setBounds(20,350+(20*4),150,50);
+        this.sliderPathRefreshInterval.setBounds(Main.MENU_PADDING,350+(20*4),150,50);
         this.sliderPathRefreshInterval.setPaintLabels(true);
         this.sliderPathRefreshInterval.setPaintTicks(true);
         this.sliderPathRefreshInterval.setMajorTickSpacing(15);
@@ -463,7 +474,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
 
         // Start pathfinding button (also resume/pause)
         this.boardPanel.add(this.butStartSearch);
-        this.butStartSearch.setBounds(20,350+(20*7),150,40);
+        this.butStartSearch.setBounds(Main.MENU_PADDING,350+(20*7),150,40);
         this.butStartSearch.setFocusable(false);
         this.butStartSearch.addActionListener(this);
         this.butStartSearch.setEnabled(false); // Set to false until start/end nodes are created
@@ -471,7 +482,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
 
         // Maze generator button
         this.boardPanel.add(this.butGenerateMaze);
-        this.butGenerateMaze.setBounds(20,350+(20*11),150,40);
+        this.butGenerateMaze.setBounds(Main.MENU_PADDING,350+(20*11),150,40);
         this.butGenerateMaze.setFocusable(false);
         this.butGenerateMaze.addActionListener(this);
 
@@ -486,6 +497,13 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     public void paintComponent(Graphics graphic) {
         Graphics2D g2 = (Graphics2D)graphic;
         super.paintComponent(g2);
+
+        g2.setColor(Color.LIGHT_GRAY);
+        g2.fillRect(0,0, Main.MENU_WIDTH, (Main.MENU_PADDING*2)+70);
+        g2.setColor(Color.BLACK);
+        g2.setStroke(new BasicStroke(2));
+        g2.drawLine(0, (Main.MENU_PADDING*2)+70, Main.MENU_WIDTH, (Main.MENU_PADDING*2)+70);
+        g2.setStroke(new BasicStroke(1));
 
         if (pathfindingComplete == true) { // Modified RGB Color fade algorithm from https://codepen.io/Codepixl/pen/ogWWaK/
             /*r = r<0 ? 0 : Math.min(r, this.rgbMax); // Out of bound checks
@@ -514,7 +532,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
             g2.fillRect(Main.MENU_WIDTH,0, Main.FRAME_HEIGHT, Main.FRAME_HEIGHT);
 
             g2.setColor(Color.ORANGE);
-            g2.setFont(Main.loadFont("product_sans_bold",70));
+            g2.setFont(Main.loadFont("Roboto-Bold",70));
             String noPathFound = "NO PATH";
             int stringWidth = g2.getFontMetrics().stringWidth(noPathFound);
             g2.drawString(noPathFound, Main.MENU_WIDTH+(Main.FRAME_HEIGHT/2)-(stringWidth/2), (Main.FRAME_HEIGHT/2));
