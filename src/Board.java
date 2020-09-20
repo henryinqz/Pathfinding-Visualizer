@@ -13,13 +13,16 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     // Grid
     public static Node[][] grid;
     public static int gridWidth = 25, nodeSideLength;
+    private JLabel labelGridWidth = new JLabel("Grid Width:");
     private JSlider sliderGridWidth = new JSlider(10, 40, this.gridWidth); // Grid size slider
     private Node startNode, endNode;
 
+    // Menu title/author labels
     private JLabel labelMenuTitle = new JLabel("Pathfinding Visualizer");
     private JLabel labelMenuAuthor = new JLabel("By Henry Wong");
 
-    // Draw tools
+    // Drawing tools
+    private JLabel labelDrawingTools = new JLabel("Drawing Tools:");
     private JRadioButton rbStartNode = new JRadioButton("Start node", true);
     private JRadioButton rbEndNode = new JRadioButton("End node");
     private JRadioButton rbBarrierNode = new JRadioButton("Barrier node");
@@ -28,23 +31,34 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     private JButton butClearGrid = new JButton("Clear grid");
     private boolean disableDraw = false;
 
-    // Algorithm types
-    private JRadioButton rbAStar = new JRadioButton("A* search algorithm", true);
-    private JRadioButton rbDijkstra = new JRadioButton("Dijkstra's algorithm");
-    private JRadioButton rbBFS = new JRadioButton("Breadth-first search");
-    private JRadioButton rbDFS = new JRadioButton("Depth-first search");
+    // Pathfinding algorithm types
+    private JLabel labelPathfindingAlgos = new JLabel("Pathfinding Algorithms:");
+    private final String COMBOBOX_ASTAR = "A* Search Algorithm", // ComboBox strings used for indexing pathfinding algorithms
+            COMBOBOX_DIJKSTRA = "Dijkstra's Algorithm",
+            COMBOBOX_BFS = "Breadth-First Search",
+            COMBOBOX_DFS = "Depth-First Search";
+    private JComboBox pathfindingAlgosComboBox = new JComboBox(new String[] { // Dropdown menu of pathfinding algorithms
+            COMBOBOX_ASTAR, COMBOBOX_DIJKSTRA, COMBOBOX_BFS, COMBOBOX_DFS
+    });
 
-    private JButton butStartSearch = new JButton("Start pathfinding");
+    private JButton butStartSearch = new JButton("START PATHFINDING");
     private boolean disableAlgoSelect = false;
     private boolean pathfindingOngoing = false;
     private boolean pathfindingPaused = false;
 
-    // Maze generator
-    private JButton butGenerateMaze = new JButton("Generate maze");
+    // Maze generator algorithm types
+    private JLabel labelMazeGeneratorAlgos = new JLabel("Maze Generation:");
+    private final String COMBOBOX_NONE = "None", // ComboBox strings used for indexing maze generator algorithms
+            COMBOBOX_RECURSIVE_DIVISION = "Recursive Division";
+    private JComboBox mazeGeneratorAlgosComboBox = new JComboBox(new String[] { // Dropdown menu of maze generator algorithms
+            COMBOBOX_NONE, COMBOBOX_RECURSIVE_DIVISION
+    });
+    private JButton butGenerateMaze = new JButton("Generate");
 
     // Path node refresh slider
     private Thread threadPathNodeRefresh;
     private int refreshInterval = 15; // Used for connect path thread to adjust refresh interval for adding pathfinding nodes
+    private JLabel labelPathRefreshInterval = new JLabel("Visualizer Speed:");
     private JSlider sliderPathRefreshInterval = new JSlider(5, 35, refreshInterval);
 
     private Timer timerBoard = new Timer(1000 / 60, this); // 60FPS Timer
@@ -230,14 +244,19 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                 Pathfinder pathfinder = new Pathfinder(this.grid, this.startNode, this.endNode);
                 ArrayList<Node> searchPath = new ArrayList<>(), shortestPath;
 
-                if (this.rbAStar.isSelected()) { // A* search algorithm
-                    searchPath = pathfinder.astar();
-                } else if (this.rbDijkstra.isSelected()) { // Dijkstra's algorithm
-                    searchPath = pathfinder.dijkstra();
-                } else if (this.rbBFS.isSelected()) { // Breadth-first search
-                    searchPath = pathfinder.bfs();
-                } else if (this.rbDFS.isSelected()) { // Depth-first search
-                    searchPath = pathfinder.dfs();
+                switch ((String) this.pathfindingAlgosComboBox.getSelectedItem()) { // Get selected pathfinding algorithm
+                    case COMBOBOX_ASTAR: // A* search algorithm
+                        searchPath = pathfinder.astar();
+                        break;
+                    case COMBOBOX_DIJKSTRA: // Dijkstra's algorithm
+                        searchPath = pathfinder.dijkstra();
+                        break;
+                    case COMBOBOX_BFS: // Breadth-first search
+                        searchPath = pathfinder.bfs();
+                        break;
+                    case COMBOBOX_DFS: // Depth-first search
+                        searchPath = pathfinder.dfs();
+                        break;
                 }
 
                 shortestPath = pathfinder.getShortestPath();
@@ -329,15 +348,9 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
     public void disableAlgorithmSelect(boolean disableAlgoSelect) {
         this.disableAlgoSelect = disableAlgoSelect;
         if (this.disableAlgoSelect == true) { // Algorithm select has been disabled; prevent changes to pathfinding radio buttons
-            this.rbAStar.setEnabled(false);
-            this.rbDijkstra.setEnabled(false);
-            this.rbBFS.setEnabled(false);
-            this.rbDFS.setEnabled(false);
+            this.pathfindingAlgosComboBox.setEnabled(false);
         } else { // Algorithm select has been enabled; allow changes to pathfinding radio buttons
-            this.rbAStar.setEnabled(true);
-            this.rbDijkstra.setEnabled(true);
-            this.rbBFS.setEnabled(true);
-            this.rbDFS.setEnabled(true);
+            this.pathfindingAlgosComboBox.setEnabled(true);
         }
     }
     public void disableDrawing(boolean disableDraw) {
@@ -367,11 +380,12 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
 
         // MENU TITLE/AUTHOR (Top left)
         this.boardPanel.add(labelMenuTitle);
-        this.labelMenuTitle.setFont(Main.loadFont("Roboto-Bold",22));
-        this.labelMenuTitle.setBounds(Main.MENU_PADDING, Main.MENU_PADDING+10, Main.MENU_WIDTH-5, 30);
+        this.labelMenuTitle.setFont(Main.FONT_TITLE);
+        this.labelMenuTitle.setBounds(Main.MENU_PADDING, Main.MENU_PADDING+10, Main.MENU_WIDTH-(Main.MENU_PADDING*2), 30);
+
         this.boardPanel.add(labelMenuAuthor);
-        this.labelMenuAuthor.setFont(Main.loadFont("Roboto-Regular",18));
-        this.labelMenuAuthor.setBounds(Main.MENU_PADDING,Main.MENU_PADDING+35, Main.MENU_WIDTH-5, 25);
+        this.labelMenuAuthor.setFont(Main.FONT_SUBHEADER);
+        this.labelMenuAuthor.setBounds(Main.MENU_PADDING,Main.MENU_PADDING+35, Main.MENU_WIDTH-(Main.MENU_PADDING*2), 25);
 
         // DRAW TOOL RADIO BUTTONS
         ButtonGroup drawTools = new ButtonGroup(); // Only allows one draw tool radio button to be pressed at a time
@@ -379,30 +393,53 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         drawTools.add(this.rbEndNode);
         drawTools.add(this.rbBarrierNode);
 
+        this.boardPanel.add(this.labelDrawingTools);
+        this.labelDrawingTools.setFont(Main.FONT_HEADER);
+        this.labelDrawingTools.setBounds(Main.MENU_PADDING,Main.MENU_PADDING+80, Main.MENU_WIDTH-(Main.MENU_PADDING*2), 30);
+
         // Start node
         this.boardPanel.add(this.rbStartNode);
-        this.rbStartNode.setBounds(Main.MENU_PADDING,100,200,20);
+        this.rbStartNode.setBounds(Main.MENU_PADDING,Main.MENU_PADDING+90+20,200,20);
         this.rbStartNode.setFocusable(false);
         this.rbStartNode.addActionListener(this);
 
         // End node
         this.boardPanel.add(this.rbEndNode);
-        this.rbEndNode.setBounds(Main.MENU_PADDING,100+(20),200,20);
+        this.rbEndNode.setBounds(Main.MENU_PADDING,Main.MENU_PADDING+90+(20*2),200,20);
         this.rbEndNode.setFocusable(false);
         this.rbEndNode.addActionListener(this);
 
         // Barrier node
         this.boardPanel.add(this.rbBarrierNode);
-        this.rbBarrierNode.setBounds(Main.MENU_PADDING,100+(20*2),100,20);
+        this.rbBarrierNode.setBounds(Main.MENU_PADDING,Main.MENU_PADDING+90+(20*3),200,20);
         this.rbBarrierNode.setFocusable(false);
         this.rbBarrierNode.addActionListener(this);
 
         this.boardPanel.add(this.labelErase); // "Right click to erase" label
-        this.labelErase.setBounds(Main.MENU_PADDING,100+(20*3),150,20);
+        this.labelErase.setFont(Main.FONT_NORMAL_ITALICS);
+        this.labelErase.setBounds(Main.MENU_PADDING,Main.MENU_PADDING+90+(20*4),150,20);
+
+        // Reset grid button
+        this.boardPanel.add(this.butResetGrid);
+        this.butResetGrid.setBounds(Main.MENU_PADDING,Main.MENU_PADDING+90+10+(20*5), (Main.MENU_WIDTH/2)-Main.MENU_PADDING,40);
+        this.butResetGrid.setFocusable(false);
+        this.butResetGrid.addActionListener(this);
+
+        // Clear grid button
+        this.boardPanel.add(this.butClearGrid);
+        this.butClearGrid.setBounds(this.butResetGrid.getWidth()+Main.MENU_PADDING,Main.MENU_PADDING+90+10+(20*5),(Main.MENU_WIDTH/2)-Main.MENU_PADDING,40);
+        this.butClearGrid.setFocusable(false);
+        this.butClearGrid.addActionListener(this);
+
+        // GRID WIDTH SLIDER
+        // "Grid Width" JLabel/Header
+        this.boardPanel.add(this.labelGridWidth);
+        this.labelGridWidth.setFont(Main.FONT_HEADER);
+        this.labelGridWidth.setBounds(Main.MENU_PADDING,Main.MENU_PADDING+90+(20*8), Main.MENU_WIDTH-(Main.MENU_PADDING*2), 30);
 
         // Grid width slider
         this.boardPanel.add(this.sliderGridWidth);
-        this.sliderGridWidth.setBounds(Main.MENU_PADDING,100+(20*4),150,50);
+        this.sliderGridWidth.setBounds(Main.MENU_PADDING,Main.MENU_PADDING+90+5+(20*9), Main.MENU_WIDTH-(Main.MENU_PADDING*2),50);
         this.sliderGridWidth.setPaintLabels(true);
         this.sliderGridWidth.setPaintTicks(true);
         this.sliderGridWidth.setMajorTickSpacing(10);
@@ -411,80 +448,68 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         this.sliderGridWidth.addChangeListener(this);
         generateNewGrid(this.sliderGridWidth.getValue()); // Generate node grid
 
-        // Reset grid button
-        this.boardPanel.add(this.butResetGrid);
-        this.butResetGrid.setBounds(Main.MENU_PADDING,100+(20*7),150,40);
-        this.butResetGrid.setFocusable(false);
-        this.butResetGrid.addActionListener(this);
+        // PATHFINDING ALGORITHM TYPE DROPDOWN MENU (ComboBox)
+        // "Pathfinding Algorithms" JLabel/Header
+        this.boardPanel.add(this.labelPathfindingAlgos);
+        this.labelPathfindingAlgos.setFont(Main.FONT_HEADER);
+        this.labelPathfindingAlgos.setBounds(Main.MENU_PADDING,350, Main.MENU_WIDTH-(Main.MENU_PADDING*2), 30);
 
-        // Clear grid button
-        this.boardPanel.add(this.butClearGrid);
-        this.butClearGrid.setBounds(Main.MENU_PADDING,100+(20*9),150,40);
-        this.butClearGrid.setFocusable(false);
-        this.butClearGrid.addActionListener(this);
+        // Pathfinding Algorithms Dropdown (ComboBox)
+        this.boardPanel.add(this.pathfindingAlgosComboBox);
+        this.pathfindingAlgosComboBox.setBounds(Main.MENU_PADDING, 350+30, Main.MENU_WIDTH-(Main.MENU_PADDING*2),30);
+        this.pathfindingAlgosComboBox.setFocusable(false);
 
-        // ALGORITHM TYPE RADIO BUTTONS
-        ButtonGroup algoTypes = new ButtonGroup(); // Only allows one draw tool radio button to be pressed at a time
-        algoTypes.add(this.rbAStar);
-        algoTypes.add(this.rbDijkstra);
-        algoTypes.add(this.rbBFS);
-        algoTypes.add(this.rbDFS);
+        // MAZE GENERATOR ALGORITHM TYPE DROPDOWN MENU (ComboBox)
+        // "Maze Generation" JLabel/Header
+        this.boardPanel.add(this.labelMazeGeneratorAlgos);
+        this.labelMazeGeneratorAlgos.setFont(Main.FONT_HEADER);
+        this.labelMazeGeneratorAlgos.setBounds(Main.MENU_PADDING,420, Main.MENU_WIDTH-(Main.MENU_PADDING*2), 30);
 
-        // A*
-        this.boardPanel.add(this.rbAStar);
-        this.rbAStar.setBounds(Main.MENU_PADDING,350,200,20);
-        this.rbAStar.setFocusable(false);
-        this.rbAStar.addActionListener(this);
+        // Maze Generator Algorithms Dropdown (ComboBox)
+        this.boardPanel.add(this.mazeGeneratorAlgosComboBox);
+        this.mazeGeneratorAlgosComboBox.setBounds(Main.MENU_PADDING, 420+30, Main.MENU_WIDTH-(Main.MENU_PADDING*2)-80-5,30);
+        this.mazeGeneratorAlgosComboBox.setFocusable(false);
 
-        // Dijkstra
-        this.boardPanel.add(this.rbDijkstra);
-        this.rbDijkstra.setBounds(Main.MENU_PADDING,350+(20),200,20);
-        this.rbDijkstra.setFocusable(false);
-        this.rbDijkstra.addActionListener(this);
+        // Maze Generator button
+        this.boardPanel.add(this.butGenerateMaze);
+        this.butGenerateMaze.setBounds(Main.MENU_WIDTH-(Main.MENU_PADDING)-80,420+30-1,80,32);
+        this.butGenerateMaze.setFocusable(false);
+        this.butGenerateMaze.addActionListener(this);
 
-        // BFS
-        this.boardPanel.add(this.rbBFS);
-        this.rbBFS.setBounds(Main.MENU_PADDING,350+(20*2),200,20);
-        this.rbBFS.setFocusable(false);
-        this.rbBFS.addActionListener(this);
+        // PATH NODE REFRESH/VISUALIZER SLIDER
+        // "Visualizer Speed" JLabel/Header
+        this.boardPanel.add(this.labelPathRefreshInterval);
+        this.labelPathRefreshInterval.setFont(Main.FONT_HEADER);
+        this.labelPathRefreshInterval.setBounds(Main.MENU_PADDING,490, Main.MENU_WIDTH-(Main.MENU_PADDING*2), 30);
 
-        // DFS
-        this.boardPanel.add(this.rbDFS);
-        this.rbDFS.setBounds(Main.MENU_PADDING,350+(20*3),200,20);
-        this.rbDFS.setFocusable(false);
-        this.rbDFS.addActionListener(this);
-
-        // Path node refresh slider
+        // Pathnode refresh slider
         this.boardPanel.add(this.sliderPathRefreshInterval);
-        this.sliderPathRefreshInterval.setBounds(Main.MENU_PADDING,350+(20*4),150,50);
+        this.sliderPathRefreshInterval.setBounds(Main.MENU_PADDING,490+25,Main.MENU_WIDTH-(Main.MENU_PADDING*2),50);
         this.sliderPathRefreshInterval.setPaintLabels(true);
         this.sliderPathRefreshInterval.setPaintTicks(true);
         this.sliderPathRefreshInterval.setMajorTickSpacing(15);
         this.sliderPathRefreshInterval.setMinorTickSpacing(5);
-        this.sliderPathRefreshInterval.setSnapToTicks(true);
+        //this.sliderPathRefreshInterval.setSnapToTicks(true);
         this.sliderPathRefreshInterval.setInverted(true);
         this.sliderPathRefreshInterval.setFocusable(false);
         this.sliderPathRefreshInterval.addChangeListener(this);
 
+        // Pathnode refresh slider intervals
         Hashtable<Integer, JLabel> tablePathRefreshInterval = new Hashtable<>();
         tablePathRefreshInterval.put(this.sliderPathRefreshInterval.getMinimum(), new JLabel("Fast"));
         tablePathRefreshInterval.put((this.sliderPathRefreshInterval.getMaximum()+this.sliderPathRefreshInterval.getMinimum())/2, new JLabel("Medium"));
         tablePathRefreshInterval.put(this.sliderPathRefreshInterval.getMaximum(), new JLabel("Slow"));
         this.sliderPathRefreshInterval.setLabelTable(tablePathRefreshInterval);
 
-        // Start pathfinding button (also resume/pause)
+        // START PATHFINDING BUTTON (also resume/pause)
         this.boardPanel.add(this.butStartSearch);
-        this.butStartSearch.setBounds(Main.MENU_PADDING,350+(20*7),150,40);
+        this.butStartSearch.setFont(Main.loadFont("Roboto-Bold", 18));
+        this.butStartSearch.setBounds(Main.MENU_PADDING,650,Main.MENU_WIDTH-(Main.MENU_PADDING*2),70);
+        Main.centerJButton(this.butStartSearch, Main.MENU_WIDTH);
         this.butStartSearch.setFocusable(false);
         this.butStartSearch.addActionListener(this);
         this.butStartSearch.setEnabled(false); // Set to false until start/end nodes are created
-        //this.butStartSearch.setBackground(Color.GREEN);
-
-        // Maze generator button
-        this.boardPanel.add(this.butGenerateMaze);
-        this.butGenerateMaze.setBounds(Main.MENU_PADDING,350+(20*11),150,40);
-        this.butGenerateMaze.setFocusable(false);
-        this.butGenerateMaze.addActionListener(this);
+        this.butStartSearch.setBackground(Color.GREEN);
 
         this.timerBoard.start(); // 60FPS repaint timer
     }
