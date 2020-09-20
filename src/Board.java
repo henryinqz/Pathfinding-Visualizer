@@ -280,14 +280,26 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
                     }
                 }).start();
             }
+        } else if (evt.getSource() == this.mazeGeneratorAlgosComboBox) {
+            if (this.mazeGeneratorAlgosComboBox.getSelectedItem() == COMBOBOX_NONE) {
+                this.butGenerateMaze.setEnabled(false);
+            } else {
+                this.butGenerateMaze.setEnabled(true);
+            }
         } else if (evt.getSource() == this.butGenerateMaze) {
             new Thread(() -> {
                 if (JOptionPane.showConfirmDialog(null, "To generate a maze the current grid will be reset. Are you sure you want to clear the grid?", "Warning",
                         JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { // Confirm clear grid dialog. Yes option.
                     clearGrid();
 
-                    MazeGenerator.recursiveDivision(this.grid, 0, 0, gridWidth-1, gridWidth-1);
-                    System.out.println("RD Done");
+                    switch ((String) this.mazeGeneratorAlgosComboBox.getSelectedItem()) { // Get selected pathfinding algorithm
+                        case COMBOBOX_NONE: // Empty
+                            break;
+                        case COMBOBOX_RECURSIVE_DIVISION: // Recursive division maze generation
+                            MazeGenerator.recursiveDivision(this.grid, 0, 0, gridWidth-1, gridWidth-1);
+                            System.out.println("RD Done");
+                            break;
+                    }
                 }
             }).start();
         }
@@ -469,12 +481,14 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         this.boardPanel.add(this.mazeGeneratorAlgosComboBox);
         this.mazeGeneratorAlgosComboBox.setBounds(Main.MENU_PADDING, 420+30, Main.MENU_WIDTH-(Main.MENU_PADDING*2)-80-5,30);
         this.mazeGeneratorAlgosComboBox.setFocusable(false);
+        this.mazeGeneratorAlgosComboBox.addActionListener(this);
 
-        // Maze Generator button
+        // Maze Generator Button
         this.boardPanel.add(this.butGenerateMaze);
         this.butGenerateMaze.setBounds(Main.MENU_WIDTH-(Main.MENU_PADDING)-80,420+30-1,80,32);
         this.butGenerateMaze.setFocusable(false);
         this.butGenerateMaze.addActionListener(this);
+        this.butGenerateMaze.setEnabled(false); // When maze generator algo is none, set to off. (Default to off)
 
         // PATH NODE REFRESH/VISUALIZER SLIDER
         // "Visualizer Speed" JLabel/Header
