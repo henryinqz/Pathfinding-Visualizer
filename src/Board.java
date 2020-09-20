@@ -542,6 +542,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         g2.setColor(Color.BLACK);
         g2.setStroke(new BasicStroke(2));
         g2.drawLine(0, (Main.MENU_PADDING*2)+70, Main.MENU_WIDTH, (Main.MENU_PADDING*2)+70);
+        g2.drawLine(0, 340, Main.MENU_WIDTH, 340);
         g2.setStroke(new BasicStroke(1));
 
         if (pathfindingComplete == true) { // Modified RGB Color fade algorithm from https://codepen.io/Codepixl/pen/ogWWaK/
