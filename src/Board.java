@@ -37,8 +37,8 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
             COMBOBOX_DIJKSTRA = "Dijkstra's Algorithm",
             COMBOBOX_BFS = "Breadth-First Search",
             COMBOBOX_DFS = "Depth-First Search";
-    private JComboBox pathfindingAlgosComboBox = new JComboBox(new String[] { // Dropdown menu of pathfinding algorithms
-            COMBOBOX_ASTAR, COMBOBOX_DIJKSTRA, COMBOBOX_BFS, COMBOBOX_DFS
+    private JComboBox pathfindingAlgosComboBox = new JComboBox(new String[] { // Dropdown menu of pathfinding algorithms (TODO: Add Dijkstra)
+            COMBOBOX_ASTAR, /*COMBOBOX_DIJKSTRA,*/ COMBOBOX_BFS, COMBOBOX_DFS
     });
 
     private JButton butStartSearch = new JButton("START PATHFINDING");
@@ -471,6 +471,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         this.pathfindingAlgosComboBox.setBounds(Main.MENU_PADDING, 350+30, Main.MENU_WIDTH-(Main.MENU_PADDING*2),30);
         this.pathfindingAlgosComboBox.setFocusable(false);
 
+        /*
         // MAZE GENERATOR ALGORITHM TYPE DROPDOWN MENU (ComboBox)
         // "Maze Generation" JLabel/Header
         this.boardPanel.add(this.labelMazeGeneratorAlgos);
@@ -489,6 +490,7 @@ public class Board extends MouseAdapter implements ActionListener, ChangeListene
         this.butGenerateMaze.setFocusable(false);
         this.butGenerateMaze.addActionListener(this);
         this.butGenerateMaze.setEnabled(false); // When maze generator algo is none, set to off. (Default to off)
+        */
 
         // PATH NODE REFRESH/VISUALIZER SLIDER
         // "Visualizer Speed" JLabel/Header

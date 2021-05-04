@@ -157,6 +157,12 @@ public class MazeGenerator {
             }
         }
 
+//        try {
+//            Thread.sleep(2000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
         // Recursively call method
         if (orientation == HORIZONTAL) { // Horizontally split
             recursiveDivision(grid, startX, startY, endX, wallY-1); // Search above: (startX, startY) -> (endX, wallY)
